@@ -9,6 +9,11 @@ import About from "./pages/About";
 import Blog from "./pages/Blog";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import BlogPublic from "./pages/BlogPublic";
+import BlogPost from "./pages/BlogPost";
+import Contact from "./pages/Contact";
+import Auth from "./pages/Auth";
+import AdminPanel from "./pages/AdminPanel";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
