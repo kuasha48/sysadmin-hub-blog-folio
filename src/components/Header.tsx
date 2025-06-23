@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Terminal, User, BookOpen, Settings, Home } from 'lucide-react';
@@ -10,7 +9,7 @@ const Header = () => {
     { path: '/', label: 'Home', icon: Home },
     { path: '/about', label: 'About', icon: User },
     { path: '/blog', label: 'Blog', icon: BookOpen },
-    { path: '/admin', label: 'Admin', icon: Settings },
+    { path: '/contact', label: 'Contact', icon: Settings },
   ];
 
   return (
@@ -40,6 +39,13 @@ const Header = () => {
                 </Link>
               );
             })}
+            <Link
+              to="/auth"
+              className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-green-400 hover:bg-gray-800 transition-colors"
+            >
+              <Settings className="h-4 w-4" />
+              <span>Admin</span>
+            </Link>
           </nav>
 
           <div className="md:hidden">

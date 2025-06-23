@@ -33,17 +33,26 @@ const App = () => (
             <Route path="/blog" element={
               <>
                 <Header />
-                <Blog />
+                <BlogPublic />
                 <Footer />
               </>
             } />
-            <Route path="/admin" element={
+            <Route path="/blog/:slug" element={
               <>
                 <Header />
-                <Admin />
+                <BlogPost />
                 <Footer />
               </>
             } />
+            <Route path="/contact" element={
+              <>
+                <Header />
+                <Contact />
+                <Footer />
+              </>
+            } />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/admin" element={<AdminPanel />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

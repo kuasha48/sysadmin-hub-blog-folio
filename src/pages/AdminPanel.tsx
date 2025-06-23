@@ -1,0 +1,591 @@
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import RichTextEditor from '@/components/RichTextEditor';
+import { 
+  Plus, 
+  Edit, 
+  Trash2, 
+  Eye, 
+  Calendar, 
+  Tag, 
+  User, 
+  LogOut,
+  Upload,
+  Mail,
+  MessageSquare
+} from 'lucide-react';
+
+interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  thumbnail_url: string;
+  category: string;
+  tags: string[];
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ContactSubmission {
+  id: string;
+  name: string;
+  email: string;
+  mobile: string;
+  country: string;
+  message: string;
+  created_at: string;
+}
+
+const AdminPanel = () => {
+  const { user, isAdmin, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [contacts, setContacts] = useState<ContactSubmission[]>([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [activeTab, setActiveTab] = useState('posts');
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    slug: '',
+    excerpt: '',
+    content: '',
+    category: '',
+    tags: '',
+    status: 'draft',
+    thumbnail_url: ''
+  });
+
+  const categories = [
+    { id: 'infrastructure', name: 'Infrastructure' },
+    { id: 'security', name: 'Security' },
+    { id: 'devops', name: 'DevOps' },
+    { id: 'tutorials', name: 'Tutorials' },
+    { id: 'automation', name: 'Automation' },
+    { id: 'networking', name: 'Networking' },
+    { id: 'cloud', name: 'Cloud Computing' }
+  ];
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+      return;
+    }
+    
+    if (!loading && user && !isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You don't have admin privileges.",
+        variant: "destructive",
+      });
+      navigate('/');
+      return;
+    }
+
+    if (isAdmin) {
+      fetchPosts();
+      fetchContacts();
+    }
+  }, [user, isAdmin, loading, navigate]);
+
+  const fetchPosts = async () => {
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch blog posts",
+        variant: "destructive",
+      });
+    } else {
+      setPosts(data || []);
+    }
+  };
+
+  const fetchContacts = async () => {
+    const { data, error } = await supabase
+      .from('contact_submissions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch contact submissions",
+        variant: "destructive",
+      });
+    } else {
+      setContacts(data || []);
+    }
+  };
+
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  };
+
+  const uploadThumbnail = async (file: File) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+      .from('blog-thumbnails')
+      .upload(fileName, file);
+
+    if (error) {
+      throw error;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('blog-thumbnails')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      let thumbnailUrl = formData.thumbnail_url;
+      
+      if (thumbnailFile) {
+        thumbnailUrl = await uploadThumbnail(thumbnailFile);
+      }
+
+      const postData = {
+        ...formData,
+        slug: formData.slug || generateSlug(formData.title),
+        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
+        thumbnail_url: thumbnailUrl,
+        author_id: user!.id,
+        updated_at: new Date().toISOString(),
+        ...(formData.status === 'published' && !editingPost && { published_at: new Date().toISOString() })
+      };
+
+      if (editingPost) {
+        const { error } = await supabase
+          .from('blog_posts')
+          .update(postData)
+          .eq('id', editingPost.id);
+
+        if (error) throw error;
+        
+        toast({
+          title: "Success",
+          description: "Blog post updated successfully!",
+        });
+      } else {
+        const { error } = await supabase
+          .from('blog_posts')
+          .insert([postData]);
+
+        if (error) throw error;
+        
+        toast({
+          title: "Success",
+          description: "Blog post created successfully!",
+        });
+      }
+
+      setFormData({
+        title: '',
+        slug: '',
+        excerpt: '',
+        content: '',
+        category: '',
+        tags: '',
+        status: 'draft',
+        thumbnail_url: ''
+      });
+      setThumbnailFile(null);
+      setEditingPost(null);
+      setIsCreateModalOpen(false);
+      fetchPosts();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save blog post",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEdit = (post: BlogPost) => {
+    setEditingPost(post);
+    setFormData({
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt,
+      content: post.content,
+      category: post.category,
+      tags: post.tags.join(', '),
+      status: post.status,
+      thumbnail_url: post.thumbnail_url || ''
+    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete blog post",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Blog post deleted successfully!",
+        });
+        fetchPosts();
+      }
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  const stats = {
+    totalPosts: posts.length,
+    publishedPosts: posts.filter(p => p.status === 'published').length,
+    draftPosts: posts.filter(p => p.status === 'draft').length,
+    totalContacts: contacts.length
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <div className="flex space-x-4">
+            <Button onClick={handleSignOut} variant="outline">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-green-600 hover:bg-green-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Post
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingPost ? 'Edit Post' : 'Create New Post'}
+                  </DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="title">Title</Label>
+                      <Input
+                        id="title"
+                        value={formData.title}
+                        onChange={(e) => {
+                          const title = e.target.value;
+                          setFormData({
+                            ...formData, 
+                            title,
+                            slug: generateSlug(title)
+                          });
+                        }}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="slug">Slug</Label>
+                      <Input
+                        id="slug"
+                        value={formData.slug}
+                        onChange={(e) => setFormData({...formData, slug: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="excerpt">Excerpt</Label>
+                    <Input
+                      id="excerpt"
+                      value={formData.excerpt}
+                      onChange={(e) => setFormData({...formData, excerpt: e.target.value})}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="thumbnail">Thumbnail Image</Label>
+                    <Input
+                      id="thumbnail"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)}
+                    />
+                    {formData.thumbnail_url && (
+                      <img 
+                        src={formData.thumbnail_url} 
+                        alt="Current thumbnail" 
+                        className="mt-2 w-32 h-20 object-cover rounded"
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="content">Content</Label>
+                    <RichTextEditor
+                      value={formData.content}
+                      onChange={(content) => setFormData({...formData, content})}
+                      placeholder="Write your blog post content here..."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="category">Category</Label>
+                      <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="status">Status</Label>
+                      <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="draft">Draft</SelectItem>
+                          <SelectItem value="published">Published</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="tags">Tags (comma-separated)</Label>
+                      <Input
+                        id="tags"
+                        value={formData.tags}
+                        onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                        placeholder="Docker, Security, Linux"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-2">
+                    <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                      {editingPost ? 'Update' : 'Create'} Post
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+              <User className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalPosts}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Published</CardTitle>
+              <Eye className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.publishedPosts}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Drafts</CardTitle>
+              <Edit className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.draftPosts}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Contact Messages</CardTitle>
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalContacts}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="mb-6">
+          <div className="flex space-x-4">
+            <Button
+              variant={activeTab === 'posts' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('posts')}
+            >
+              Blog Posts
+            </Button>
+            <Button
+              variant={activeTab === 'contacts' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('contacts')}
+            >
+              Contact Messages
+            </Button>
+          </div>
+        </div>
+
+        {/* Posts Table */}
+        {activeTab === 'posts' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Blog Posts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {posts.map((post) => (
+                  <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-4">
+                        {post.thumbnail_url && (
+                          <img 
+                            src={post.thumbnail_url} 
+                            alt={post.title}
+                            className="w-16 h-10 object-cover rounded"
+                          />
+                        )}
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{post.title}</h3>
+                          <p className="text-gray-600 text-sm mt-1">{post.excerpt}</p>
+                          <div className="flex items-center space-x-4 mt-2">
+                            <Badge variant={post.status === 'published' ? 'default' : 'secondary'}>
+                              {post.status}
+                            </Badge>
+                            <span className="text-sm text-gray-500 flex items-center">
+                              <Tag className="h-3 w-3 mr-1" />
+                              {categories.find(cat => cat.id === post.category)?.name}
+                            </span>
+                            <span className="text-sm text-gray-500 flex items-center">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              {new Date(post.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(post)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(post.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Contact Messages */}
+        {activeTab === 'contacts' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Messages</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {contacts.map((contact) => (
+                  <div key={contact.id} className="p-4 border rounded-lg">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{contact.name}</h3>
+                        <p className="text-sm text-gray-600">{contact.email}</p>
+                        {contact.mobile && (
+                          <p className="text-sm text-gray-600">{contact.mobile}</p>
+                        )}
+                        {contact.country && (
+                          <p className="text-sm text-gray-600">{contact.country}</p>
+                        )}
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        {new Date(contact.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-gray-700 mt-2">{contact.message}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AdminPanel;

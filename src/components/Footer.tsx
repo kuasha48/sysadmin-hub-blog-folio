@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Terminal, Github, Linkedin, Mail, Twitter } from 'lucide-react';
 
@@ -38,7 +37,7 @@ const Footer = () => {
               <li><a href="/" className="text-gray-300 hover:text-green-400 transition-colors">Home</a></li>
               <li><a href="/about" className="text-gray-300 hover:text-green-400 transition-colors">About</a></li>
               <li><a href="/blog" className="text-gray-300 hover:text-green-400 transition-colors">Blog</a></li>
-              <li><a href="/admin" className="text-gray-300 hover:text-green-400 transition-colors">Admin</a></li>
+              <li><a href="/contact" className="text-gray-300 hover:text-green-400 transition-colors">Contact</a></li>
             </ul>
           </div>
           
