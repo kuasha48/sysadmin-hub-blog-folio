@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
@@ -20,19 +19,6 @@ const Contact = () => {
   });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-
-  const countries = [
-    'Afghanistan', 'Albania', 'Algeria', 'Argentina', 'Australia', 'Austria',
-    'Bangladesh', 'Belgium', 'Brazil', 'Canada', 'China', 'Denmark',
-    'Egypt', 'Finland', 'France', 'Germany', 'Ghana', 'Greece',
-    'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Italy',
-    'Japan', 'Jordan', 'Kenya', 'Kuwait', 'Malaysia', 'Mexico',
-    'Netherlands', 'New Zealand', 'Nigeria', 'Norway', 'Pakistan',
-    'Philippines', 'Poland', 'Portugal', 'Russia', 'Saudi Arabia',
-    'Singapore', 'South Africa', 'South Korea', 'Spain', 'Sweden',
-    'Switzerland', 'Thailand', 'Turkey', 'UAE', 'United Kingdom',
-    'United States', 'Vietnam'
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,18 +115,13 @@ const Contact = () => {
 
                 <div>
                   <Label htmlFor="country">Country</Label>
-                  <Select value={formData.country} onValueChange={(value) => handleInputChange('country', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {countries.map((country) => (
-                        <SelectItem key={country} value={country}>
-                          {country}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="country"
+                    type="text"
+                    value={formData.country}
+                    onChange={(e) => handleInputChange('country', e.target.value)}
+                    placeholder="Your country"
+                  />
                 </div>
 
                 <div>
@@ -176,15 +157,32 @@ const Contact = () => {
                   <Mail className="h-5 w-5 text-green-600" />
                   <div>
                     <p className="font-medium">Email</p>
-                    <p className="text-gray-600">contact@sysadmin.dev</p>
+                    <p className="text-gray-600">contact@azimstech.com</p>
                   </div>
                 </div>
                 
                 <div className="flex items-center space-x-3">
-                  <Phone className="h-5 w-5 text-green-600" />
+                  <div className="flex space-x-1">
+                    <svg className="h-5 w-5 text-green-600" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                    </svg>
+                    <svg className="h-5 w-5 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M11.398.002C5.473.021 1.023 4.488 1.003 10.401c-.013 3.681 1.803 6.953 4.572 9.03.315.25.773.266 1.109.059l.717-.436.746-.452c.329-.2.549-.568.549-.973V8.75c0-.469-.345-.856-.801-.925L6.483 7.55c-.297-.045-.525-.31-.525-.615V5.946c0-.683.542-1.242 1.216-1.242h.08c.674 0 1.216.56 1.216 1.242v.988c0 .306.228.57.525.615l1.412.275c.456.069.801.456.801.925v8.879c0 .405.22.772.549.973l.746.452.717.436c.336.207.794.191 1.109-.059 2.769-2.077 4.585-5.349 4.572-9.03-.02-5.913-4.47-10.38-10.395-10.399z"/>
+                    </svg>
+                  </div>
                   <div>
                     <p className="font-medium">Phone</p>
-                    <p className="text-gray-600">+1 (555) 123-4567</p>
+                    <p className="text-gray-600">+(383) 45677 497</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <svg className="h-5 w-5 text-green-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                  </svg>
+                  <div>
+                    <p className="font-medium">Phone</p>
+                    <p className="text-gray-600">+(880) 1911 343 443</p>
                   </div>
                 </div>
                 
@@ -192,7 +190,7 @@ const Contact = () => {
                   <MapPin className="h-5 w-5 text-green-600" />
                   <div>
                     <p className="font-medium">Address</p>
-                    <p className="text-gray-600">123 Tech Street<br />Digital City, DC 12345</p>
+                    <p className="text-gray-600">Prishtina, Kosovo</p>
                   </div>
                 </div>
               </CardContent>
@@ -204,6 +202,10 @@ const Contact = () => {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3 text-gray-600">
+                  <li className="flex items-start space-x-2">
+                    <span className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
+                    <span>Contact for long term projects</span>
+                  </li>
                   <li className="flex items-start space-x-2">
                     <span className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
                     <span>Technical questions about our tutorials</span>

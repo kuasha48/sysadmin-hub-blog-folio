@@ -20,12 +20,12 @@ const Hero = () => {
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             System Administrator
-            <span className="block text-green-400 mt-2">& DevOps Engineer</span>
+            <span className="block text-green-400 mt-2">& Cloud Expert</span>
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Passionate about infrastructure automation, security hardening, and building scalable systems. 
-            Sharing knowledge through technical articles and tutorials.
+            Experienced System Administrator with hands-on expertise in Linux/Unix, virtualization, and cloud 
+            computing. Skilled in automation, security, and building scalable infrastructure solutions.
           </p>
           
           <div className="flex flex-wrap justify-center gap-6 mb-12">

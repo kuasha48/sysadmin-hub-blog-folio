@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Terminal, Github, Linkedin, Mail, Twitter } from 'lucide-react';
 
@@ -9,11 +10,11 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
               <Terminal className="h-8 w-8 text-green-400" />
-              <span className="text-xl font-bold">SysAdmin.dev</span>
+              <span className="text-xl font-bold">AzimsTech.com</span>
             </div>
             <p className="text-gray-300 mb-6 max-w-md">
-              Sharing knowledge and expertise in system administration, security, and DevOps practices. 
-              Building reliable, secure, and scalable infrastructure solutions.
+              Experienced System Administrator with hands-on expertise in Linux/Unix, virtualization, and cloud 
+              computing. Building reliable, secure, and scalable infrastructure solutions.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">
@@ -54,7 +55,7 @@ const Footer = () => {
         
         <div className="border-t border-gray-800 mt-12 pt-8 text-center">
           <p className="text-gray-400">
-            © 2024 SysAdmin.dev. All rights reserved. Built with passion for technology.
+            © 2024 AzimsTech.com. All rights reserved. Built with passion for technology.
           </p>
         </div>
       </div>

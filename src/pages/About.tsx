@@ -5,36 +5,71 @@ import { Calendar, MapPin, Award, ExternalLink } from 'lucide-react';
 const About = () => {
   const experiences = [
     {
-      title: 'Senior System Administrator',
-      company: 'Tech Corp',
-      period: '2020 - Present',
-      description: 'Leading infrastructure automation and security initiatives across 500+ servers',
+      title: 'System Administrator (On-site)',
+      company: 'SPINP Tech – Prishtina, Kosovo',
+      period: 'July 2023 – Present',
+      description: 'Manage and adhere to Service Level Agreements (SLAs) and ERP.',
       achievements: [
-        'Reduced system downtime by 85% through proactive monitoring',
-        'Implemented automated backup solutions saving 20 hours/week',
-        'Led cloud migration project resulting in 40% cost reduction'
+        'Provision and manage virtual machines using Proxmox VE, ensuring optimal resource allocation of VPS\'s and performance',
+        'Maintain backup and disaster recovery and minimize downtime',
+        'Deploy and configure operating systems AlmaLinux-8, 9 and install WHM/cPanel, Exim mail system',
+        'Configure Email sending policy, DKIM, SPF, DMARC, implement CSF Firewall, imunify360',
+        'IT Documentation for quick solve in future use'
       ]
     },
     {
-      title: 'DevOps Engineer',
-      company: 'StartupXYZ',
-      period: '2018 - 2020',
-      description: 'Built CI/CD pipelines and managed containerized applications',
+      title: 'System Administrator (Remote)',
+      company: 'Syscomed - Sistemas y Control del Mediterráneo S.L. – Spain',
+      period: 'Jun 2022 – Dec 2024',
+      description: 'Manage and adhere to Service Level Agreements (SLAs) and SaaS.',
       achievements: [
-        'Implemented Docker containerization for 50+ applications',
-        'Set up Kubernetes clusters handling 1M+ requests daily',
-        'Automated deployment process reducing release time by 60%'
+        'Provision and manage virtual machines using OpenShift, Proxmox VE, and AWS, ensuring optimal resource allocation and performance',
+        'VM migration, maintain backup and disaster recovery and minimize downtime',
+        'Deploy and configure various operating systems such as Linux/UNIX (RedHat, CentOS, AlmaLinux, Ubuntu) to meet organizational requirements',
+        'Setup, configure and manage Email servers',
+        'Install, configure, and maintain DNS and Hosting servers for Python, WordPress, cPanel, and Laravel applications',
+        'Implement security measures including SSL, SSH, Firewall and other best practices',
+        'Automate routine tasks using Bash and Python scripting',
+        'Provide technical guidance and IT Documentation to enhance team capabilities'
       ]
     },
     {
-      title: 'Junior System Administrator',
-      company: 'IT Solutions Inc',
-      period: '2016 - 2018',
-      description: 'Managed Windows and Linux servers, network infrastructure',
+      title: 'System Administrator (On-site)',
+      company: 'Zoom Touch General Trading LLC – Dubai, UAE',
+      period: 'Sep 2021 - Jun 2022',
+      description: 'Web and Exchange Email Server Management, OS Maintenance (Mac, Windows, Linux)',
       achievements: [
-        'Maintained 99.9% uptime for critical business applications',
-        'Implemented security hardening across all systems',
-        'Created documentation and training materials for team'
+        'Proficiently oversaw Azure Administration, Google Workspace, Customized ERP Software, Zoho CRM',
+        'E-commerce and Inventory Management systems ensuring seamless operations',
+        'Install and configure Windows Server 2012, Backup, Restore, Antivirus Solution',
+        'WordPress Migration and server management'
+      ]
+    },
+    {
+      title: 'System Engineer (On-site)',
+      company: 'FRA Technology L.L.C – Dubai, UAE',
+      period: 'Jul 2015 – Aug 2021',
+      description: 'Cloud Infrastructure & Server Virtualization Management',
+      achievements: [
+        'Proficiently oversaw servers on Google Cloud Platform (GCP) and Azure optimizing cloud resources',
+        'Implemented server virtualization solutions using VMware, Citrix XenServer, ProxmoxVE',
+        'Created and managed digital data storage with automated and manual backup procedures',
+        'Successfully installed and configured various Linux/Unix, Windows Server operating systems',
+        'Expertly configured control panels like cPanel/WHM, DirectAdmin, SolidCP',
+        'Demonstrated proficiency in Google Workspace, SSL, DNS, Active Directory, Apache, Nginx, MySQL',
+        'Provided comprehensive client support through ticketing systems and technical documentation'
+      ]
+    },
+    {
+      title: 'Technical Sales Support Engineer (On-site)',
+      company: 'BD SOFT IT – Dhaka, Bangladesh',
+      period: 'Jun 2009 – Feb 2014',
+      description: 'Customer Support for software installation, hardware troubleshooting, Web hosting, and Email support.',
+      achievements: [
+        'Configuration of Outlook, MySQL, Webmail, POP3, IMAP, and SMTP',
+        'Provided comprehensive technical support for various IT solutions',
+        'Hardware troubleshooting and system maintenance',
+        'Web hosting and email server support'
       ]
     }
   ];
@@ -54,23 +89,25 @@ const About = () => {
         <div className="bg-white rounded-lg shadow-lg p-8 mb-12">
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
             <div className="w-32 h-32 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white text-4xl font-bold">
-              SA
+              AT
             </div>
             <div className="flex-1">
               <h1 className="text-4xl font-bold text-gray-900 mb-4">About Me</h1>
               <p className="text-lg text-gray-700 mb-4">
-                I'm a passionate System Administrator with over 7 years of experience in managing complex IT infrastructures, 
-                implementing security best practices, and automating operational processes. I love sharing knowledge through 
-                technical blog posts and helping others solve challenging infrastructure problems.
+                Experienced System Administrator with hands-on expertise in Linux/Unix, virtualization, and cloud 
+                computing. Adept at troubleshooting, securing systems, and fostering collaboration. Skilled in Email servers, 
+                and adept in Big Data and VM migrations, in various control panels including cPanel, Plesk, and WHMCS for 
+                effective billing system and customer support. Eager to leverage skills in Linux administration, automation, and 
+                security to drive innovation and optimize IT infrastructure.
               </p>
               <div className="flex flex-wrap gap-4 text-gray-600">
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 mr-2" />
-                  San Francisco, CA
+                  Prishtina, Kosovo
                 </div>
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2" />
-                  7+ Years Experience
+                  13+ Years Experience
                 </div>
               </div>
             </div>
