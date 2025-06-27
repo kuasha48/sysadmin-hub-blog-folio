@@ -15,16 +15,9 @@ export const useAuth = () => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (session?.user) {
-          setTimeout(async () => {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', session.user.id)
-              .single();
-            
-            setIsAdmin(profile?.role === 'admin');
-          }, 0);
+        // Only allow admin access for the specific email
+        if (session?.user && session.user.email === 'cloudyskybd48@gmail.com') {
+          setIsAdmin(true);
         } else {
           setIsAdmin(false);
         }
@@ -36,6 +29,14 @@ export const useAuth = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // Only allow admin access for the specific email
+      if (session?.user && session.user.email === 'cloudyskybd48@gmail.com') {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+      
       setLoading(false);
     });
 
