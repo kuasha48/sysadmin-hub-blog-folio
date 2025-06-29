@@ -2,8 +2,12 @@
 import React from 'react';
 import { Terminal, Server, Shield, Code, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useContent } from '@/hooks/useContent';
 
 const Hero = () => {
+  const { content: titleContent } = useContent('hero_title');
+  const { content: descriptionContent } = useContent('hero_description');
+
   return (
     <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-20">
       <div className="absolute inset-0 opacity-10">
@@ -19,13 +23,15 @@ const Hero = () => {
           </div>
           
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            System Administrator
-            <span className="block text-green-400 mt-2">& Cloud Expert</span>
+            <div dangerouslySetInnerHTML={{ 
+              __html: titleContent?.content || 'System Administrator<br><span class="text-green-400">& Cloud Expert</span>' 
+            }} />
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-            Experienced System Administrator with hands-on expertise in Linux/Unix, virtualization, and cloud 
-            computing. Skilled in automation, security, and building scalable infrastructure solutions.
+            <div dangerouslySetInnerHTML={{ 
+              __html: descriptionContent?.content || 'Experienced System Administrator with hands-on expertise in Linux/Unix, virtualization, and cloud computing. Skilled in automation, security, and building scalable infrastructure solutions.' 
+            }} />
           </p>
           
           <div className="flex flex-wrap justify-center gap-6 mb-12">

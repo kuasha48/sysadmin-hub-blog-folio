@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { useContent, useContactInfo } from '@/hooks/useContent';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +20,8 @@ const Contact = () => {
   });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { content: introContent } = useContent('contact_intro');
+  const { contactInfo } = useContactInfo();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +63,9 @@ const Contact = () => {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Contact Us</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Have a question or want to get in touch? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            <div dangerouslySetInnerHTML={{ 
+              __html: introContent?.content || 'Have a question or want to get in touch? We\'d love to hear from you. Send us a message and we\'ll respond as soon as possible.' 
+            }} />
           </p>
         </div>
 
@@ -157,7 +162,7 @@ const Contact = () => {
                   <Mail className="h-5 w-5 text-green-600" />
                   <div>
                     <p className="font-medium">Email</p>
-                    <p className="text-gray-600">contact@azimstech.com</p>
+                    <p className="text-gray-600">{contactInfo?.email || 'contact@azimstech.com'}</p>
                   </div>
                 </div>
                 
@@ -172,7 +177,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <p className="font-medium">Phone</p>
-                    <p className="text-gray-600">+(383) 45677 497</p>
+                    <p className="text-gray-600">{contactInfo?.phone_primary || '+(383) 45677 497'}</p>
                   </div>
                 </div>
 
@@ -182,7 +187,7 @@ const Contact = () => {
                   </svg>
                   <div>
                     <p className="font-medium">Phone</p>
-                    <p className="text-gray-600">+(880) 1911 343 443</p>
+                    <p className="text-gray-600">{contactInfo?.phone_secondary || '+(880) 1911 343 443'}</p>
                   </div>
                 </div>
                 
@@ -190,7 +195,7 @@ const Contact = () => {
                   <MapPin className="h-5 w-5 text-green-600" />
                   <div>
                     <p className="font-medium">Address</p>
-                    <p className="text-gray-600">Prishtina, Kosovo</p>
+                    <p className="text-gray-600">{contactInfo?.address || 'Prishtina, Kosovo'}</p>
                   </div>
                 </div>
               </CardContent>

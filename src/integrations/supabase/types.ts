@@ -57,6 +57,36 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_info: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          id: string
+          phone_primary: string | null
+          phone_secondary: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          phone_primary?: string | null
+          phone_secondary?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          phone_primary?: string | null
+          phone_secondary?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           country: string | null
@@ -84,6 +114,36 @@ export type Database = {
           message?: string
           mobile?: string | null
           name?: string
+        }
+        Relationships: []
+      }
+      content_sections: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          section_key: string
+          section_type: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          section_key: string
+          section_type?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          section_key?: string
+          section_type?: string
+          title?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

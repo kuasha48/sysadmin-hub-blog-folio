@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import RichTextEditor from '@/components/RichTextEditor';
+import ContentEditor from '@/components/ContentEditor';
 import { 
   Plus, 
   Edit, 
@@ -23,7 +23,8 @@ import {
   LogOut,
   Upload,
   Mail,
-  MessageSquare
+  MessageSquare,
+  FileText
 } from 'lucide-react';
 
 interface BlogPost {
@@ -487,6 +488,13 @@ const AdminPanel = () => {
             >
               Contact Messages
             </Button>
+            <Button
+              variant={activeTab === 'content' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('content')}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Content Management
+            </Button>
           </div>
         </div>
 
@@ -583,6 +591,9 @@ const AdminPanel = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Content Management */}
+        {activeTab === 'content' && <ContentEditor />}
       </div>
     </div>
   );

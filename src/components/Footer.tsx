@@ -1,8 +1,12 @@
 
 import React from 'react';
 import { Terminal, Github, Linkedin, Mail, Twitter } from 'lucide-react';
+import { useContent, useContactInfo } from '@/hooks/useContent';
 
 const Footer = () => {
+  const { content: descriptionContent } = useContent('footer_description');
+  const { contactInfo } = useContactInfo();
+
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -13,8 +17,9 @@ const Footer = () => {
               <span className="text-xl font-bold">AzimsTech.com</span>
             </div>
             <p className="text-gray-300 mb-6 max-w-md">
-              Experienced System Administrator with hands-on expertise in Linux/Unix, virtualization, and cloud 
-              computing. Building reliable, secure, and scalable infrastructure solutions.
+              <div dangerouslySetInnerHTML={{ 
+                __html: descriptionContent?.content || 'Experienced System Administrator with hands-on expertise in Linux/Unix, virtualization, and cloud computing. Building reliable, secure, and scalable infrastructure solutions.' 
+              }} />
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">
@@ -26,7 +31,7 @@ const Footer = () => {
               <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">
+              <a href={`mailto:${contactInfo?.email || 'contact@azimstech.com'}`} className="text-gray-400 hover:text-green-400 transition-colors">
                 <Mail className="h-5 w-5" />
               </a>
             </div>

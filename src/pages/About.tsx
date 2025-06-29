@@ -1,8 +1,12 @@
 
 import React from 'react';
-import { Calendar, MapPin, Award, ExternalLink } from 'lucide-react';
+import { Calendar, MapPin, Award } from 'lucide-react';
+import { useContent, useContactInfo } from '@/hooks/useContent';
 
 const About = () => {
+  const { content: introContent } = useContent('about_intro');
+  const { contactInfo } = useContactInfo();
+
   const experiences = [
     {
       title: 'System Administrator (On-site)',
@@ -94,16 +98,14 @@ const About = () => {
             <div className="flex-1">
               <h1 className="text-4xl font-bold text-gray-900 mb-4">About Me</h1>
               <p className="text-lg text-gray-700 mb-4">
-                Experienced System Administrator with hands-on expertise in Linux/Unix, virtualization, and cloud 
-                computing. Adept at troubleshooting, securing systems, and fostering collaboration. Skilled in Email servers, 
-                and adept in Big Data and VM migrations, in various control panels including cPanel, Plesk, and WHMCS for 
-                effective billing system and customer support. Eager to leverage skills in Linux administration, automation, and 
-                security to drive innovation and optimize IT infrastructure.
+                <div dangerouslySetInnerHTML={{ 
+                  __html: introContent?.content || 'Experienced System Administrator with hands-on expertise in Linux/Unix, virtualization, and cloud computing. Adept at troubleshooting, securing systems, and fostering collaboration.' 
+                }} />
               </p>
               <div className="flex flex-wrap gap-4 text-gray-600">
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 mr-2" />
-                  Prishtina, Kosovo
+                  {contactInfo?.address || 'Prishtina, Kosovo'}
                 </div>
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2" />
