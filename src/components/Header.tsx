@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Terminal, User, BookOpen, Settings, Home } from 'lucide-react';
@@ -18,7 +19,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-2">
             <Terminal className="h-8 w-8 text-green-400" />
-            <span className="text-xl font-bold text-white">SysAdmin.dev</span>
+            <span className="text-xl font-bold text-white">AzimsTech.com</span>
           </Link>
           
           <nav className="hidden md:flex space-x-8">

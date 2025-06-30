@@ -7,6 +7,7 @@ import { useContent } from '@/hooks/useContent';
 const Hero = () => {
   const { content: titleContent } = useContent('hero_title');
   const { content: descriptionContent } = useContent('hero_description');
+  const { content: profileImageContent } = useContent('hero_profile_image');
 
   return (
     <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-20">
@@ -16,50 +17,66 @@ const Hero = () => {
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
+          {/* Profile Image */}
           <div className="flex justify-center mb-8">
-            <div className="p-4 bg-green-500/10 rounded-full border border-green-500/20">
-              <Terminal className="h-16 w-16 text-green-400" />
+            <div className="relative">
+              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-green-400 shadow-2xl animate-fade-in">
+                {profileImageContent?.content ? (
+                  <img 
+                    src={profileImageContent.content}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                    <Terminal className="h-16 w-16 text-green-400" />
+                  </div>
+                )}
+              </div>
+              <div className="absolute -bottom-2 -right-2 p-2 bg-green-500 rounded-full border-4 border-gray-900">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
             </div>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
             <div dangerouslySetInnerHTML={{ 
               __html: titleContent?.content || 'System Administrator<br><span class="text-green-400">& Cloud Expert</span>' 
             }} />
           </h1>
           
-          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto animate-fade-in">
             <div dangerouslySetInnerHTML={{ 
               __html: descriptionContent?.content || 'Experienced System Administrator with hands-on expertise in Linux/Unix, virtualization, and cloud computing. Skilled in automation, security, and building scalable infrastructure solutions.' 
             }} />
           </p>
           
-          <div className="flex flex-wrap justify-center gap-6 mb-12">
-            <div className="flex items-center space-x-2 bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-700">
+          <div className="flex flex-wrap justify-center gap-6 mb-12 animate-fade-in">
+            <div className="flex items-center space-x-2 bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-700 hover-scale">
               <Server className="h-5 w-5 text-blue-400" />
               <span>Infrastructure</span>
             </div>
-            <div className="flex items-center space-x-2 bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-700">
+            <div className="flex items-center space-x-2 bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-700 hover-scale">
               <Shield className="h-5 w-5 text-red-400" />
               <span>Security</span>
             </div>
-            <div className="flex items-center space-x-2 bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-700">
+            <div className="flex items-center space-x-2 bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-700 hover-scale">
               <Code className="h-5 w-5 text-purple-400" />
               <span>Automation</span>
             </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
             <Link
               to="/about"
-              className="inline-flex items-center px-8 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors"
+              className="inline-flex items-center px-8 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors hover-scale"
             >
               View My Work
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <Link
               to="/blog"
-              className="inline-flex items-center px-8 py-3 bg-transparent border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white font-semibold rounded-lg transition-all"
+              className="inline-flex items-center px-8 py-3 bg-transparent border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white font-semibold rounded-lg transition-all hover-scale"
             >
               Read Blog Posts
             </Link>

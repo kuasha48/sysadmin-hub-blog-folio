@@ -39,6 +39,7 @@ interface BlogPost {
   status: string;
   created_at: string;
   updated_at: string;
+  is_featured: boolean;
 }
 
 interface ContactSubmission {
@@ -71,7 +72,8 @@ const AdminPanel = () => {
     category: '',
     tags: '',
     status: 'draft',
-    thumbnail_url: ''
+    thumbnail_url: '',
+    is_featured: false
   });
 
   const categories = [
@@ -219,7 +221,8 @@ const AdminPanel = () => {
         category: '',
         tags: '',
         status: 'draft',
-        thumbnail_url: ''
+        thumbnail_url: '',
+        is_featured: false
       });
       setThumbnailFile(null);
       setEditingPost(null);
@@ -244,7 +247,8 @@ const AdminPanel = () => {
       category: post.category,
       tags: post.tags.join(', '),
       status: post.status,
-      thumbnail_url: post.thumbnail_url || ''
+      thumbnail_url: post.thumbnail_url || '',
+      is_featured: post.is_featured || false
     });
     setIsCreateModalOpen(true);
   };
@@ -380,7 +384,7 @@ const AdminPanel = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-4 gap-4">
                     <div>
                       <Label htmlFor="category">Category</Label>
                       <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
@@ -416,6 +420,16 @@ const AdminPanel = () => {
                         onChange={(e) => setFormData({...formData, tags: e.target.value})}
                         placeholder="Docker, Security, Linux"
                       />
+                    </div>
+                    <div className="flex items-center space-x-2 mt-6">
+                      <input
+                        type="checkbox"
+                        id="featured"
+                        checked={formData.is_featured}
+                        onChange={(e) => setFormData({...formData, is_featured: e.target.checked})}
+                        className="rounded border-gray-300"
+                      />
+                      <Label htmlFor="featured">Featured Post</Label>
                     </div>
                   </div>
 

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Save, Edit } from 'lucide-react';
+import { Save, Edit, Upload } from 'lucide-react';
 
 interface ContentSection {
   id: string;
@@ -32,6 +32,7 @@ const ContentEditor = () => {
   const [editingContent, setEditingContent] = useState('');
   const [editingTitle, setEditingTitle] = useState('');
   const [loading, setLoading] = useState(false);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -71,6 +72,25 @@ const ContentEditor = () => {
     } else if (data) {
       setContactInfo(data);
     }
+  };
+
+  const uploadProfileImage = async (file: File) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `profile.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+      .from('profile-images')
+      .upload(fileName, file, { upsert: true });
+
+    if (error) {
+      throw error;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('profile-images')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
   };
 
   const handleEditSection = (section: ContentSection) => {
@@ -136,8 +156,75 @@ const ContentEditor = () => {
     setLoading(false);
   };
 
+  const handleUploadProfileImage = async () => {
+    if (!profileImageFile) return;
+
+    setLoading(true);
+    try {
+      const imageUrl = await uploadProfileImage(profileImageFile);
+      
+      // Update or create hero_profile_image content section
+      const { error } = await supabase
+        .from('content_sections')
+        .upsert({
+          section_key: 'hero_profile_image',
+          title: 'Hero Profile Image',
+          content: imageUrl,
+          section_type: 'image'
+        }, {
+          onConflict: 'section_key'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Profile image updated successfully!",
+      });
+      
+      setProfileImageFile(null);
+      fetchContentSections();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload profile image",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Site Profile Image</CardTitle>
+          <CardDescription>
+            Upload your profile image for the homepage hero section
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="profileImage">Profile Image</Label>
+              <Input
+                id="profileImage"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setProfileImageFile(e.target.files?.[0] || null)}
+              />
+            </div>
+            <Button 
+              onClick={handleUploadProfileImage} 
+              disabled={!profileImageFile || loading}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Profile Image
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Content Sections</CardTitle>
@@ -176,25 +263,34 @@ const ContentEditor = () => {
                     </div>
                     <div>
                       <Label htmlFor="content">Content</Label>
-                      <Editor
-                        apiKey="your-tinymce-api-key"
-                        value={editingContent}
-                        onEditorChange={(content) => setEditingContent(content)}
-                        init={{
-                          height: 300,
-                          menubar: false,
-                          plugins: [
-                            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
-                            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                            'insertdatetime', 'media', 'table', 'preview', 'help', 'wordcount'
-                          ],
-                          toolbar: 'undo redo | blocks | ' +
-                            'bold italic forecolor | alignleft aligncenter ' +
-                            'alignright alignjustify | bullist numlist outdent indent | ' +
-                            'removeformat | help',
-                          content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
-                        }}
-                      />
+                      {section.section_type === 'image' ? (
+                        <Input
+                          id="content"
+                          value={editingContent}
+                          onChange={(e) => setEditingContent(e.target.value)}
+                          placeholder="Image URL"
+                        />
+                      ) : (
+                        <Editor
+                          apiKey="your-tinymce-api-key"
+                          value={editingContent}
+                          onEditorChange={(content) => setEditingContent(content)}
+                          init={{
+                            height: 300,
+                            menubar: false,
+                            plugins: [
+                              'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+                              'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                              'insertdatetime', 'media', 'table', 'preview', 'help', 'wordcount'
+                            ],
+                            toolbar: 'undo redo | blocks | ' +
+                              'bold italic forecolor | alignleft aligncenter ' +
+                              'alignright alignjustify | bullist numlist outdent indent | ' +
+                              'removeformat | help',
+                            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                          }}
+                        />
+                      )}
                     </div>
                     <div className="flex space-x-2">
                       <Button onClick={handleSaveSection} disabled={loading}>
@@ -210,10 +306,17 @@ const ContentEditor = () => {
                     </div>
                   </div>
                 ) : (
-                  <div 
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: section.content || '' }}
-                  />
+                  <div className="prose max-w-none">
+                    {section.section_type === 'image' ? (
+                      section.content ? (
+                        <img src={section.content} alt={section.title} className="max-w-xs rounded-lg" />
+                      ) : (
+                        <p className="text-gray-500">No image uploaded</p>
+                      )
+                    ) : (
+                      <div dangerouslySetInnerHTML={{ __html: section.content || '' }} />
+                    )}
+                  </div>
                 )}
               </div>
             ))}
