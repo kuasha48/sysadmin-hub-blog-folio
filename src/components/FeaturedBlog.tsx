@@ -12,7 +12,7 @@ interface BlogPost {
   thumbnail_url: string;
   category: string;
   created_at: string;
-  is_featured: boolean;
+  is_featured?: boolean;
 }
 
 const FeaturedBlog = () => {

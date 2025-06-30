@@ -39,7 +39,7 @@ interface BlogPost {
   status: string;
   created_at: string;
   updated_at: string;
-  is_featured: boolean;
+  is_featured?: boolean;
 }
 
 interface ContactSubmission {
@@ -538,6 +538,11 @@ const AdminPanel = () => {
                             <Badge variant={post.status === 'published' ? 'default' : 'secondary'}>
                               {post.status}
                             </Badge>
+                            {post.is_featured && (
+                              <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+                                Featured
+                              </Badge>
+                            )}
                             <span className="text-sm text-gray-500 flex items-center">
                               <Tag className="h-3 w-3 mr-1" />
                               {categories.find(cat => cat.id === post.category)?.name}
