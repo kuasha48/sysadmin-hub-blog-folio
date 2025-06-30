@@ -85,15 +85,19 @@ const ContentEditor = () => {
   };
 
   const fetchSocialLinks = async () => {
-    const { data, error } = await supabase
-      .from('social_links')
-      .select('*')
-      .order('platform');
+    try {
+      const { data, error } = await (supabase as any)
+        .from('social_links')
+        .select('*')
+        .order('platform');
 
-    if (error && error.code !== 'PGRST116') {
-      console.log('Social links table might not exist yet');
-    } else if (data) {
-      setSocialLinks(data);
+      if (error && error.code !== 'PGRST116') {
+        console.log('Social links table might not exist yet');
+      } else if (data) {
+        setSocialLinks(data);
+      }
+    } catch (err) {
+      console.log('Error fetching social links:', err);
     }
   };
 
@@ -221,28 +225,36 @@ const ContentEditor = () => {
   };
 
   const handleSaveSocialLink = async (platform: string, url: string) => {
-    const { error } = await supabase
-      .from('social_links')
-      .upsert({
-        platform,
-        url,
-        icon: platform.toLowerCase()
-      }, {
-        onConflict: 'platform'
-      });
+    try {
+      const { error } = await (supabase as any)
+        .from('social_links')
+        .upsert({
+          platform,
+          url,
+          icon: platform.toLowerCase()
+        }, {
+          onConflict: 'platform'
+        });
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to update social link",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Social link updated successfully!",
+        });
+        fetchSocialLinks();
+      }
+    } catch (err) {
       toast({
         title: "Error",
         description: "Failed to update social link",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: "Social link updated successfully!",
-      });
-      fetchSocialLinks();
     }
   };
 

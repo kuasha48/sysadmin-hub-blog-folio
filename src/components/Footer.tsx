@@ -21,15 +21,19 @@ const Footer = () => {
   }, []);
 
   const fetchSocialLinks = async () => {
-    const { data, error } = await supabase
-      .from('social_links')
-      .select('*')
-      .order('platform');
+    try {
+      const { data, error } = await (supabase as any)
+        .from('social_links')
+        .select('*')
+        .order('platform');
 
-    if (error && error.code !== 'PGRST116') {
-      console.log('Social links table might not exist yet');
-    } else if (data) {
-      setSocialLinks(data);
+      if (error && error.code !== 'PGRST116') {
+        console.log('Social links table might not exist yet');
+      } else if (data) {
+        setSocialLinks(data);
+      }
+    } catch (err) {
+      console.log('Error fetching social links:', err);
     }
   };
 
