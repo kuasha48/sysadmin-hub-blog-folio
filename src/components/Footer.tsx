@@ -1,11 +1,50 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Terminal, Github, Linkedin, Mail, Twitter } from 'lucide-react';
 import { useContent, useContactInfo } from '@/hooks/useContent';
+import { supabase } from '@/integrations/supabase/client';
+
+interface SocialLink {
+  id: string;
+  platform: string;
+  url: string;
+  icon: string;
+}
 
 const Footer = () => {
   const { content: descriptionContent } = useContent('footer_description');
   const { contactInfo } = useContactInfo();
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+
+  useEffect(() => {
+    fetchSocialLinks();
+  }, []);
+
+  const fetchSocialLinks = async () => {
+    const { data, error } = await supabase
+      .from('social_links')
+      .select('*')
+      .order('platform');
+
+    if (error && error.code !== 'PGRST116') {
+      console.log('Social links table might not exist yet');
+    } else if (data) {
+      setSocialLinks(data);
+    }
+  };
+
+  const getSocialUrl = (platform: string) => {
+    const link = socialLinks.find(l => l.platform.toLowerCase() === platform.toLowerCase());
+    return link?.url || '#';
+  };
+
+  const getMailUrl = () => {
+    const mailLink = socialLinks.find(l => l.platform.toLowerCase() === 'mail');
+    if (mailLink?.url) {
+      return mailLink.url.startsWith('mailto:') ? mailLink.url : `mailto:${mailLink.url}`;
+    }
+    return `mailto:${contactInfo?.email || 'contact@azimstech.com'}`;
+  };
 
   return (
     <footer className="bg-gray-900 text-white">
@@ -22,16 +61,34 @@ const Footer = () => {
               }} />
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">
+              <a 
+                href={getSocialUrl('github')} 
+                className="text-gray-400 hover:text-green-400 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Github className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">
+              <a 
+                href={getSocialUrl('linkedin')} 
+                className="text-gray-400 hover:text-green-400 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Linkedin className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">
+              <a 
+                href={getSocialUrl('twitter')} 
+                className="text-gray-400 hover:text-green-400 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href={`mailto:${contactInfo?.email || 'contact@azimstech.com'}`} className="text-gray-400 hover:text-green-400 transition-colors">
+              <a 
+                href={getMailUrl()} 
+                className="text-gray-400 hover:text-green-400 transition-colors"
+              >
                 <Mail className="h-5 w-5" />
               </a>
             </div>

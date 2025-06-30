@@ -8,6 +8,7 @@ const Hero = () => {
   const { content: titleContent } = useContent('hero_title');
   const { content: descriptionContent } = useContent('hero_description');
   const { content: profileImageContent } = useContent('hero_profile_image');
+  const { content: profileImage2Content } = useContent('hero_profile_image_2');
 
   return (
     <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-20">
@@ -17,8 +18,9 @@ const Hero = () => {
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          {/* Profile Image */}
-          <div className="flex justify-center mb-8">
+          {/* Profile Images */}
+          <div className="flex justify-center mb-8 space-x-6">
+            {/* Primary Profile Image */}
             <div className="relative">
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-green-400 shadow-2xl animate-fade-in">
                 {profileImageContent?.content ? (
@@ -35,6 +37,26 @@ const Hero = () => {
               </div>
               <div className="absolute -bottom-2 -right-2 p-2 bg-green-500 rounded-full border-4 border-gray-900">
                 <Shield className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            
+            {/* Secondary Profile Image */}
+            <div className="relative">
+              <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-400 shadow-2xl animate-fade-in">
+                {profileImage2Content?.content ? (
+                  <img 
+                    src={profileImage2Content.content}
+                    alt="Profile 2"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                    <Server className="h-16 w-16 text-blue-400" />
+                  </div>
+                )}
+              </div>
+              <div className="absolute -bottom-2 -right-2 p-2 bg-blue-500 rounded-full border-4 border-gray-900">
+                <Code className="h-6 w-6 text-white" />
               </div>
             </div>
           </div>

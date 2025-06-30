@@ -1,8 +1,12 @@
 
 import React from 'react';
 import { Server, Shield, Code, Database, Cloud, Zap } from 'lucide-react';
+import { useContent } from '@/hooks/useContent';
 
 const SkillsSection = () => {
+  const { content: titleContent } = useContent('skills_title');
+  const { content: descriptionContent } = useContent('skills_description');
+
   const skillCategories = [
     {
       title: 'Infrastructure & Servers',
@@ -43,14 +47,18 @@ const SkillsSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-gray-50 animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Technical Expertise
+            <div dangerouslySetInnerHTML={{ 
+              __html: titleContent?.content || 'Technical Expertise' 
+            }} />
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Years of experience in system administration, security, and DevOps practices
+            <div dangerouslySetInnerHTML={{ 
+              __html: descriptionContent?.content || 'Years of experience in system administration, security, and DevOps practices' 
+            }} />
           </p>
         </div>
 
@@ -58,7 +66,7 @@ const SkillsSection = () => {
           {skillCategories.map((category, index) => {
             const Icon = category.icon;
             return (
-              <div key={index} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+              <div key={index} className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow hover-scale">
                 <div className="flex items-center mb-4">
                   <Icon className={`h-8 w-8 ${category.color} mr-3`} />
                   <h3 className="text-xl font-semibold text-gray-900">{category.title}</h3>
