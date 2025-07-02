@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -101,32 +102,57 @@ const ContentEditor = () => {
     }
   };
 
+  const ensureBucketExists = async () => {
+    try {
+      console.log('Checking if profile-images bucket exists...');
+      
+      // First try to create the bucket (this will fail if it already exists, which is fine)
+      const { data: createData, error: createError } = await supabase.storage
+        .createBucket('profile-images', {
+          public: true,
+          fileSizeLimit: 5242880, // 5MB
+          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+        });
+
+      if (createError && !createError.message.includes('already exists')) {
+        console.error('Error creating bucket:', createError);
+        throw createError;
+      }
+
+      console.log('Bucket creation result:', createData);
+      
+      // Verify the bucket exists by listing buckets
+      const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+      console.log('Available buckets after creation:', buckets);
+      
+      if (listError) {
+        throw listError;
+      }
+
+      const profileImagesBucket = buckets?.find(bucket => bucket.id === 'profile-images');
+      if (!profileImagesBucket) {
+        throw new Error('Failed to create or find profile-images bucket');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error ensuring bucket exists:', error);
+      throw error;
+    }
+  };
+
   const uploadProfileImage = async (file: File, imageKey: string) => {
     console.log('Starting upload for:', imageKey);
     console.log('File details:', { name: file.name, size: file.size, type: file.type });
     
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${imageKey}.${fileExt}`;
-    
-    console.log('Uploading to bucket: profile-images, fileName:', fileName);
-    
     try {
-      // First, let's check if the bucket exists
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-      console.log('Available buckets:', buckets);
+      // Ensure bucket exists first
+      await ensureBucketExists();
       
-      if (bucketsError) {
-        console.error('Error listing buckets:', bucketsError);
-        throw new Error(`Failed to list buckets: ${bucketsError.message}`);
-      }
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${imageKey}.${fileExt}`;
       
-      const profileImagesBucket = buckets?.find(bucket => bucket.id === 'profile-images');
-      if (!profileImagesBucket) {
-        console.error('profile-images bucket not found in available buckets');
-        throw new Error('profile-images bucket not found');
-      }
-      
-      console.log('Found profile-images bucket:', profileImagesBucket);
+      console.log('Uploading to bucket: profile-images, fileName:', fileName);
       
       const { data, error } = await supabase.storage
         .from('profile-images')
