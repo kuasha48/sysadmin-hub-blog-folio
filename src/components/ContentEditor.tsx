@@ -102,22 +102,53 @@ const ContentEditor = () => {
   };
 
   const uploadProfileImage = async (file: File, imageKey: string) => {
+    console.log('Starting upload for:', imageKey);
+    console.log('File details:', { name: file.name, size: file.size, type: file.type });
+    
     const fileExt = file.name.split('.').pop();
     const fileName = `${imageKey}.${fileExt}`;
     
-    const { data, error } = await supabase.storage
-      .from('profile-images')
-      .upload(fileName, file, { upsert: true });
+    console.log('Uploading to bucket: profile-images, fileName:', fileName);
+    
+    try {
+      // First, let's check if the bucket exists
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      console.log('Available buckets:', buckets);
+      
+      if (bucketsError) {
+        console.error('Error listing buckets:', bucketsError);
+        throw new Error(`Failed to list buckets: ${bucketsError.message}`);
+      }
+      
+      const profileImagesBucket = buckets?.find(bucket => bucket.id === 'profile-images');
+      if (!profileImagesBucket) {
+        console.error('profile-images bucket not found in available buckets');
+        throw new Error('profile-images bucket not found');
+      }
+      
+      console.log('Found profile-images bucket:', profileImagesBucket);
+      
+      const { data, error } = await supabase.storage
+        .from('profile-images')
+        .upload(fileName, file, { upsert: true });
 
-    if (error) {
+      console.log('Upload result:', { data, error });
+
+      if (error) {
+        console.error('Upload error:', error);
+        throw error;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-images')
+        .getPublicUrl(fileName);
+
+      console.log('Generated public URL:', publicUrl);
+      return publicUrl;
+    } catch (error) {
+      console.error('Full upload error:', error);
       throw error;
     }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('profile-images')
-      .getPublicUrl(fileName);
-
-    return publicUrl;
   };
 
   const handleEditSection = (section: ContentSection) => {
@@ -215,6 +246,7 @@ const ContentEditor = () => {
       }
       fetchContentSections();
     } catch (error: any) {
+      console.error('handleUploadProfileImage error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to upload profile image",
