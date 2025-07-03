@@ -6,8 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Save, Edit, Upload, Settings, User, Home, Share2 } from 'lucide-react';
+import { Save, Edit, Settings, User, Home, Share2 } from 'lucide-react';
 import RichTextEditor from './RichTextEditor';
+import ProfileUpload from './ProfileUpload';
 
 interface ContentSection {
   id: string;
@@ -40,8 +41,6 @@ const ContentEditor = () => {
   const [editingContent, setEditingContent] = useState('');
   const [editingTitle, setEditingTitle] = useState('');
   const [loading, setLoading] = useState(false);
-  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
-  const [profileImage2File, setProfileImage2File] = useState<File | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -98,39 +97,6 @@ const ContentEditor = () => {
       }
     } catch (err) {
       console.log('Error fetching social links:', err);
-    }
-  };
-
-  const uploadProfileImage = async (file: File, imageKey: string) => {
-    console.log('Starting upload for:', imageKey);
-    console.log('File details:', { name: file.name, size: file.size, type: file.type });
-    
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${imageKey}.${fileExt}`;
-      
-      console.log('Uploading to bucket: profile-images, fileName:', fileName);
-      
-      const { data, error } = await supabase.storage
-        .from('profile-images')
-        .upload(fileName, file, { upsert: true });
-
-      console.log('Upload result:', { data, error });
-
-      if (error) {
-        console.error('Upload error:', error);
-        throw error;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('profile-images')
-        .getPublicUrl(fileName);
-
-      console.log('Generated public URL:', publicUrl);
-      return publicUrl;
-    } catch (error) {
-      console.error('Full upload error:', error);
-      throw error;
     }
   };
 
@@ -192,48 +158,6 @@ const ContentEditor = () => {
       toast({
         title: "Success",
         description: "Contact info updated successfully!",
-      });
-    }
-    setLoading(false);
-  };
-
-  const handleUploadProfileImage = async (imageKey: string, file: File | null) => {
-    if (!file) return;
-
-    setLoading(true);
-    try {
-      const imageUrl = await uploadProfileImage(file, imageKey);
-      
-      const { error } = await supabase
-        .from('content_sections')
-        .upsert({
-          section_key: imageKey,
-          title: imageKey === 'hero_profile_image' ? 'Hero Profile Image' : 'Hero Profile Image 2',
-          content: imageUrl,
-          section_type: 'image'
-        }, {
-          onConflict: 'section_key'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Profile image updated successfully!",
-      });
-      
-      if (imageKey === 'hero_profile_image') {
-        setProfileImageFile(null);
-      } else {
-        setProfileImage2File(null);
-      }
-      fetchContentSections();
-    } catch (error: any) {
-      console.error('handleUploadProfileImage error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to upload profile image",
-        variant: "destructive",
       });
     }
     setLoading(false);
@@ -577,69 +501,21 @@ const ContentEditor = () => {
         </TabsContent>
 
         <TabsContent value="profile" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Images</CardTitle>
-              <CardDescription>Upload and manage profile images for the homepage</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="font-medium">Primary Profile Image</h3>
-                  <div>
-                    <Label htmlFor="profileImage">Profile Image</Label>
-                    <Input
-                      id="profileImage"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setProfileImageFile(e.target.files?.[0] || null)}
-                    />
-                  </div>
-                  <Button 
-                    onClick={() => handleUploadProfileImage('hero_profile_image', profileImageFile)} 
-                    disabled={!profileImageFile || loading}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Primary Image
-                  </Button>
-                  {contentSections.find(s => s.section_key === 'hero_profile_image')?.content && (
-                    <img 
-                      src={contentSections.find(s => s.section_key === 'hero_profile_image')?.content} 
-                      alt="Primary Profile" 
-                      className="w-32 h-32 rounded-full object-cover border-4 border-green-400"
-                    />
-                  )}
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="font-medium">Secondary Profile Image</h3>
-                  <div>
-                    <Label htmlFor="profileImage2">Profile Image 2</Label>
-                    <Input
-                      id="profileImage2"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setProfileImage2File(e.target.files?.[0] || null)}
-                    />
-                  </div>
-                  <Button 
-                    onClick={() => handleUploadProfileImage('hero_profile_image_2', profileImage2File)} 
-                    disabled={!profileImage2File || loading}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Secondary Image
-                  </Button>
-                  {contentSections.find(s => s.section_key === 'hero_profile_image_2')?.content && (
-                    <img 
-                      src={contentSections.find(s => s.section_key === 'hero_profile_image_2')?.content} 
-                      alt="Secondary Profile" 
-                      className="w-32 h-32 rounded-full object-cover border-4 border-blue-400"
-                    />
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ProfileUpload
+              imageKey="hero_profile_image"
+              title="Primary Profile Image"
+              currentImageUrl={contentSections.find(s => s.section_key === 'hero_profile_image')?.content}
+              onUploadComplete={fetchContentSections}
+            />
+            
+            <ProfileUpload
+              imageKey="hero_profile_image_2"
+              title="Secondary Profile Image"
+              currentImageUrl={contentSections.find(s => s.section_key === 'hero_profile_image_2')?.content}
+              onUploadComplete={fetchContentSections}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="contact" className="space-y-6">
