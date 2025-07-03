@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import ContentEditor from '@/components/ContentEditor';
+import RichTextEditor from '@/components/RichTextEditor';
 import { 
   Plus, 
   Edit, 
@@ -172,10 +172,10 @@ const AdminPanel = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) {
+    if (!user || !isAdmin) {
       toast({
         title: "Error",
-        description: "You must be logged in to create posts",
+        description: "You must be logged in as admin to create posts",
         variant: "destructive",
       });
       return;
@@ -189,16 +189,23 @@ const AdminPanel = () => {
       }
 
       const postData = {
-        ...formData,
+        title: formData.title,
         slug: formData.slug || generateSlug(formData.title),
+        excerpt: formData.excerpt,
+        content: formData.content,
+        category: formData.category,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
+        status: formData.status,
         thumbnail_url: thumbnailUrl,
-        author_id: user.id, // This is crucial for RLS policy
+        is_featured: formData.is_featured,
+        author_id: user.id,
         updated_at: new Date().toISOString(),
         ...(formData.status === 'published' && !editingPost && { published_at: new Date().toISOString() })
       };
 
-      console.log('Creating post with data:', postData); // Debug log
+      console.log('Creating post with data:', postData);
+      console.log('Current user:', user);
+      console.log('Is admin:', isAdmin);
 
       if (editingPost) {
         const { error } = await supabase
@@ -332,7 +339,7 @@ const AdminPanel = () => {
                   New Post
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
+              <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white">
                 <DialogHeader>
                   <DialogTitle className="text-gray-900">
                     {editingPost ? 'Edit Post' : 'Create New Post'}
@@ -400,17 +407,10 @@ const AdminPanel = () => {
 
                   <div>
                     <Label htmlFor="content" className="text-gray-700">Content</Label>
-                    <Textarea
-                      id="content"
+                    <RichTextEditor
                       value={formData.content}
-                      onChange={(e) => setFormData({...formData, content: e.target.value})}
+                      onChange={(value) => setFormData({...formData, content: value})}
                       placeholder="Write your blog post content here..."
-                      className="min-h-[300px] bg-white border-gray-300 text-left"
-                      style={{ 
-                        direction: 'ltr',
-                        textAlign: 'left',
-                        unicodeBidi: 'normal'
-                      }}
                     />
                   </div>
 
