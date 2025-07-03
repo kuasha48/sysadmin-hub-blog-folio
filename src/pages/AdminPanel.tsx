@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,8 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import RichTextEditor from '@/components/RichTextEditor';
 import ContentEditor from '@/components/ContentEditor';
 import { 
   Plus, 
@@ -171,6 +172,15 @@ const AdminPanel = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create posts",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       let thumbnailUrl = formData.thumbnail_url;
       
@@ -183,10 +193,12 @@ const AdminPanel = () => {
         slug: formData.slug || generateSlug(formData.title),
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
         thumbnail_url: thumbnailUrl,
-        author_id: user!.id,
+        author_id: user.id, // This is crucial for RLS policy
         updated_at: new Date().toISOString(),
         ...(formData.status === 'published' && !editingPost && { published_at: new Date().toISOString() })
       };
+
+      console.log('Creating post with data:', postData); // Debug log
 
       if (editingPost) {
         const { error } = await supabase
@@ -194,7 +206,10 @@ const AdminPanel = () => {
           .update(postData)
           .eq('id', editingPost.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
         
         toast({
           title: "Success",
@@ -205,7 +220,10 @@ const AdminPanel = () => {
           .from('blog_posts')
           .insert([postData]);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw error;
+        }
         
         toast({
           title: "Success",
@@ -229,6 +247,7 @@ const AdminPanel = () => {
       setIsCreateModalOpen(false);
       fetchPosts();
     } catch (error: any) {
+      console.error('Submit error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to save blog post",
@@ -313,16 +332,16 @@ const AdminPanel = () => {
                   New Post
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
                 <DialogHeader>
-                  <DialogTitle>
+                  <DialogTitle className="text-gray-900">
                     {editingPost ? 'Edit Post' : 'Create New Post'}
                   </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="title">Title</Label>
+                      <Label htmlFor="title" className="text-gray-700">Title</Label>
                       <Input
                         id="title"
                         value={formData.title}
@@ -335,36 +354,40 @@ const AdminPanel = () => {
                           });
                         }}
                         required
+                        className="bg-white border-gray-300"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="slug">Slug</Label>
+                      <Label htmlFor="slug" className="text-gray-700">Slug</Label>
                       <Input
                         id="slug"
                         value={formData.slug}
                         onChange={(e) => setFormData({...formData, slug: e.target.value})}
                         required
+                        className="bg-white border-gray-300"
                       />
                     </div>
                   </div>
                   
                   <div>
-                    <Label htmlFor="excerpt">Excerpt</Label>
+                    <Label htmlFor="excerpt" className="text-gray-700">Excerpt</Label>
                     <Input
                       id="excerpt"
                       value={formData.excerpt}
                       onChange={(e) => setFormData({...formData, excerpt: e.target.value})}
                       required
+                      className="bg-white border-gray-300"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="thumbnail">Thumbnail Image</Label>
+                    <Label htmlFor="thumbnail" className="text-gray-700">Thumbnail Image</Label>
                     <Input
                       id="thumbnail"
                       type="file"
                       accept="image/*"
                       onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)}
+                      className="bg-white border-gray-300"
                     />
                     {formData.thumbnail_url && (
                       <img 
@@ -376,22 +399,29 @@ const AdminPanel = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="content">Content</Label>
-                    <RichTextEditor
+                    <Label htmlFor="content" className="text-gray-700">Content</Label>
+                    <Textarea
+                      id="content"
                       value={formData.content}
-                      onChange={(content) => setFormData({...formData, content})}
+                      onChange={(e) => setFormData({...formData, content: e.target.value})}
                       placeholder="Write your blog post content here..."
+                      className="min-h-[300px] bg-white border-gray-300 text-left"
+                      style={{ 
+                        direction: 'ltr',
+                        textAlign: 'left',
+                        unicodeBidi: 'normal'
+                      }}
                     />
                   </div>
 
                   <div className="grid grid-cols-4 gap-4">
                     <div>
-                      <Label htmlFor="category">Category</Label>
+                      <Label htmlFor="category" className="text-gray-700">Category</Label>
                       <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-white border-gray-300">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white border-gray-300">
                           {categories.map((cat) => (
                             <SelectItem key={cat.id} value={cat.id}>
                               {cat.name}
@@ -401,24 +431,25 @@ const AdminPanel = () => {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="status">Status</Label>
+                      <Label htmlFor="status" className="text-gray-700">Status</Label>
                       <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-white border-gray-300">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white border-gray-300">
                           <SelectItem value="draft">Draft</SelectItem>
                           <SelectItem value="published">Published</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="tags">Tags (comma-separated)</Label>
+                      <Label htmlFor="tags" className="text-gray-700">Tags (comma-separated)</Label>
                       <Input
                         id="tags"
                         value={formData.tags}
                         onChange={(e) => setFormData({...formData, tags: e.target.value})}
                         placeholder="Docker, Security, Linux"
+                        className="bg-white border-gray-300"
                       />
                     </div>
                     <div className="flex items-center space-x-2 mt-6">
@@ -429,7 +460,7 @@ const AdminPanel = () => {
                         onChange={(e) => setFormData({...formData, is_featured: e.target.checked})}
                         className="rounded border-gray-300"
                       />
-                      <Label htmlFor="featured">Featured Post</Label>
+                      <Label htmlFor="featured" className="text-gray-700">Featured Post</Label>
                     </div>
                   </div>
 
