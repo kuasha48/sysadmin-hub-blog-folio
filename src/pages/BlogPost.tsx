@@ -107,7 +107,7 @@ const BlogPost = () => {
               <Calendar className="h-4 w-4 mr-2" />
               <span className="mr-6">{new Date(post.published_at).toLocaleDateString()}</span>
               <User className="h-4 w-4 mr-2" />
-              <span>Admin</span>
+              <span>Fazla Rabby Azim</span>
             </div>
             
             {post.tags && post.tags.length > 0 && (
