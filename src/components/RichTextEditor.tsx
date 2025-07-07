@@ -58,23 +58,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           backgroundColor: 'white'
         }}
       />
-      <style jsx global>{`
-        .ql-editor {
-          min-height: 350px;
-          font-size: 16px;
-          line-height: 1.6;
-        }
-        .ql-toolbar {
-          border-top: 1px solid #ccc;
-          border-left: 1px solid #ccc;
-          border-right: 1px solid #ccc;
-        }
-        .ql-container {
-          border-bottom: 1px solid #ccc;
-          border-left: 1px solid #ccc;
-          border-right: 1px solid #ccc;
-        }
-      `}</style>
     </div>
   );
 };

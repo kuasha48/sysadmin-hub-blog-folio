@@ -98,3 +98,22 @@
 .blog-content u {
   @apply underline;
 }
+
+/* React Quill editor styles */
+.ql-editor {
+  min-height: 350px !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+
+.ql-toolbar {
+  border-top: 1px solid #ccc !important;
+  border-left: 1px solid #ccc !important;
+  border-right: 1px solid #ccc !important;
+}
+
+.ql-container {
+  border-bottom: 1px solid #ccc !important;
+  border-left: 1px solid #ccc !important;
+  border-right: 1px solid #ccc !important;
+}
