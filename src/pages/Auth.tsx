@@ -116,7 +116,7 @@ const Auth = () => {
                   type="email"
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
-                  placeholder="cloudyskybd48@gmail.com"
+                  placeholder="Enter your email"
                   required
                 />
               </div>
@@ -154,7 +154,7 @@ const Auth = () => {
                 <Input
                   id="signin-email"
                   type="email"
-                  placeholder="cloudyskybd48@gmail.com"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
@@ -169,7 +169,7 @@ const Auth = () => {
                 <Input
                   id="signin-password"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10"
