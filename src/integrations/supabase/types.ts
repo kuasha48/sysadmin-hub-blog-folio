@@ -179,6 +179,105 @@ export type Database = {
         }
         Relationships: []
       }
+      seo_metadata: {
+        Row: {
+          canonical_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          json_ld: Json | null
+          keywords: string | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          og_type: string | null
+          page_slug: string | null
+          page_type: string
+          robots_follow: boolean | null
+          robots_index: boolean | null
+          title: string | null
+          twitter_card: string | null
+          twitter_description: string | null
+          twitter_image: string | null
+          twitter_title: string | null
+          updated_at: string
+        }
+        Insert: {
+          canonical_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          json_ld?: Json | null
+          keywords?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_type?: string | null
+          page_slug?: string | null
+          page_type: string
+          robots_follow?: boolean | null
+          robots_index?: boolean | null
+          title?: string | null
+          twitter_card?: string | null
+          twitter_description?: string | null
+          twitter_image?: string | null
+          twitter_title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          canonical_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          json_ld?: Json | null
+          keywords?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_type?: string | null
+          page_slug?: string | null
+          page_type?: string
+          robots_follow?: boolean | null
+          robots_index?: boolean | null
+          title?: string | null
+          twitter_card?: string | null
+          twitter_description?: string | null
+          twitter_image?: string | null
+          twitter_title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          setting_key: string
+          setting_type: string | null
+          setting_value: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_type?: string | null
+          setting_value?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_type?: string | null
+          setting_value?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       social_links: {
         Row: {
           created_at: string

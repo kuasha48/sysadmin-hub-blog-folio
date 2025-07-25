@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Calendar, User, Tag, ArrowLeft } from 'lucide-react';
+import SEOHead from '@/components/SEOHead';
 
 interface BlogPost {
   id: string;
@@ -74,6 +75,13 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead 
+        pageType="blog_post" 
+        pageSlug={post.slug}
+        customTitle={post.title}
+        customDescription={post.excerpt}
+        customImage={post.thumbnail_url}
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Link 
           to="/blog" 

@@ -6,10 +6,12 @@ import StatsSection from '@/components/StatsSection';
 import SkillsSection from '@/components/SkillsSection';
 import FeaturedBlog from '@/components/FeaturedBlog';
 import Footer from '@/components/Footer';
+import SEOHead from '@/components/SEOHead';
 
 const Index = () => {
   return (
     <div className="min-h-screen">
+      <SEOHead pageType="page" pageSlug="home" />
       <Header />
       <Hero />
       <StatsSection />

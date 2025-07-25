@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import ContentEditor from '@/components/ContentEditor';
+import SEOEditor from '@/components/SEOEditor';
+import SiteSettingsEditor from '@/components/SiteSettingsEditor';
 import RichTextEditor from '@/components/RichTextEditor';
 import { 
   Plus, 
@@ -25,7 +27,9 @@ import {
   Upload,
   Mail,
   MessageSquare,
-  FileText
+  FileText,
+  Search,
+  Settings
 } from 'lucide-react';
 
 interface BlogPost {
@@ -540,6 +544,20 @@ const AdminPanel = () => {
               <FileText className="h-4 w-4 mr-2" />
               Content Management
             </Button>
+            <Button
+              variant={activeTab === 'seo' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('seo')}
+            >
+              <Search className="h-4 w-4 mr-2" />
+              SEO Settings
+            </Button>
+            <Button
+              variant={activeTab === 'settings' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('settings')}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Site Settings
+            </Button>
           </div>
         </div>
 
@@ -644,6 +662,28 @@ const AdminPanel = () => {
 
         {/* Content Management */}
         {activeTab === 'content' && <ContentEditor />}
+
+        {/* SEO Settings */}
+        {activeTab === 'seo' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Page SEO Settings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <SEOEditor pageType="page" pageSlug="home" />
+                  <SEOEditor pageType="page" pageSlug="about" />
+                  <SEOEditor pageType="page" pageSlug="blog" />
+                  <SEOEditor pageType="page" pageSlug="contact" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Site Settings */}
+        {activeTab === 'settings' && <SiteSettingsEditor />}
       </div>
     </div>
   );

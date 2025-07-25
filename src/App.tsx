@@ -14,6 +14,8 @@ import BlogPost from "./pages/BlogPost";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import AdminPanel from "./pages/AdminPanel";
+import Sitemap from "./pages/Sitemap";
+import Robots from "./pages/Robots";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
@@ -58,6 +60,8 @@ const App = () => (
             } />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/sitemap.xml" element={<Sitemap />} />
+            <Route path="/robots.txt" element={<Robots />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
