@@ -2,9 +2,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Terminal, User, BookOpen, Settings, Home } from 'lucide-react';
+import { useContent } from '@/hooks/useContent';
 
 const Header = () => {
   const location = useLocation();
+  const { content: profileImageContent } = useContent('hero_profile_image');
 
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
@@ -18,7 +20,15 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-2">
-            <Terminal className="h-8 w-8 text-green-400" />
+            {profileImageContent?.content ? (
+              <img 
+                src={profileImageContent.content}
+                alt="Azim's Tech Logo"
+                className="h-8 w-8 rounded-full object-cover border-2 border-green-400"
+              />
+            ) : (
+              <Terminal className="h-8 w-8 text-green-400" />
+            )}
             <span className="text-xl font-bold text-white">AzimsTech.com</span>
           </Link>
           

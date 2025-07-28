@@ -1,8 +1,12 @@
 
 import React from 'react';
 import { Shield, Server, Users, Award } from 'lucide-react';
+import { useContent } from '@/hooks/useContent';
 
 const StatsSection = () => {
+  const { content: titleContent } = useContent('stats_title');
+  const { content: descriptionContent } = useContent('stats_description');
+  
   const stats = [
     {
       icon: Shield,
@@ -39,10 +43,14 @@ const StatsSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 animate-fade-in">
-            Proven Track Record
+            <div dangerouslySetInnerHTML={{ 
+              __html: titleContent?.content || 'Proven Track Record' 
+            }} />
           </h2>
           <p className="text-xl text-gray-600 animate-fade-in">
-            Delivering reliable infrastructure solutions across the globe
+            <div dangerouslySetInnerHTML={{ 
+              __html: descriptionContent?.content || 'Delivering reliable infrastructure solutions across the globe' 
+            }} />
           </p>
         </div>
 

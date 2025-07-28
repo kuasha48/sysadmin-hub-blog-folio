@@ -13,6 +13,7 @@ interface SocialLink {
 
 const Footer = () => {
   const { content: descriptionContent } = useContent('footer_description');
+  const { content: profileImageContent } = useContent('hero_profile_image');
   const { contactInfo } = useContactInfo();
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
 
@@ -56,7 +57,15 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <Terminal className="h-8 w-8 text-green-400" />
+              {profileImageContent?.content ? (
+                <img 
+                  src={profileImageContent.content}
+                  alt="Azim's Tech Logo"
+                  className="h-8 w-8 rounded-full object-cover border-2 border-green-400"
+                />
+              ) : (
+                <Terminal className="h-8 w-8 text-green-400" />
+              )}
               <span className="text-xl font-bold">AzimsTech.com</span>
             </div>
             <p className="text-gray-300 mb-6 max-w-md">

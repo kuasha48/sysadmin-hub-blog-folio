@@ -200,10 +200,12 @@ const ContentEditor = () => {
   const heroSections = contentSections.filter(s => s.section_key.includes('hero'));
   const footerSections = contentSections.filter(s => s.section_key.includes('footer'));
   const skillsSections = contentSections.filter(s => s.section_key.includes('skills'));
+  const statsSections = contentSections.filter(s => s.section_key.includes('stats'));
   const otherSections = contentSections.filter(s => 
     !s.section_key.includes('hero') && 
     !s.section_key.includes('footer') && 
-    !s.section_key.includes('skills')
+    !s.section_key.includes('skills') &&
+    !s.section_key.includes('stats')
   );
 
   return (
@@ -238,6 +240,73 @@ const ContentEditor = () => {
             <CardContent>
               <div className="space-y-6">
                 {heroSections.map((section) => (
+                  <div key={section.id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <h3 className="font-semibold">{section.title}</h3>
+                        <p className="text-sm text-gray-600">{section.section_key}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditSection(section)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    </div>
+                    
+                    {editingSection === section.id ? (
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="title">Title</Label>
+                          <Input
+                            id="title"
+                            value={editingTitle}
+                            onChange={(e) => setEditingTitle(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="content">Content</Label>
+                          <RichTextEditor
+                            value={editingContent}
+                            onChange={setEditingContent}
+                            placeholder="Enter content..."
+                          />
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button onClick={handleSaveSection} disabled={loading}>
+                            <Save className="h-4 w-4 mr-2" />
+                            Save
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setEditingSection(null)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="prose max-w-none">
+                        <div dangerouslySetInnerHTML={{ __html: section.content || '' }} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Stats Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Proven Track Record</CardTitle>
+              <CardDescription>Statistics and achievements section</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {statsSections.map((section) => (
                   <div key={section.id} className="border rounded-lg p-4">
                     <div className="flex justify-between items-center mb-4">
                       <div>
