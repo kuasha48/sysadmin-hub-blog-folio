@@ -33,13 +33,36 @@ interface SocialLink {
   icon: string;
 }
 
+interface StatsEntry {
+  id: string;
+  icon_name: string;
+  number: string;
+  label: string;
+  description: string;
+  color_class: string;
+  sort_order: number;
+}
+
+interface SkillsEntry {
+  id: string;
+  title: string;
+  icon_name: string;
+  color_class: string;
+  skills: string[];
+  sort_order: number;
+}
+
 const ContentEditor = () => {
   const [contentSections, setContentSections] = useState<ContentSection[]>([]);
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+  const [statsEntries, setStatsEntries] = useState<StatsEntry[]>([]);
+  const [skillsEntries, setSkillsEntries] = useState<SkillsEntry[]>([]);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
   const [editingTitle, setEditingTitle] = useState('');
+  const [editingStatsEntry, setEditingStatsEntry] = useState<string | null>(null);
+  const [editingSkillsEntry, setEditingSkillsEntry] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -47,6 +70,8 @@ const ContentEditor = () => {
     fetchContentSections();
     fetchContactInfo();
     fetchSocialLinks();
+    fetchStatsEntries();
+    fetchSkillsEntries();
   }, []);
 
   const fetchContentSections = async () => {
@@ -97,6 +122,40 @@ const ContentEditor = () => {
       }
     } catch (err) {
       console.log('Error fetching social links:', err);
+    }
+  };
+
+  const fetchStatsEntries = async () => {
+    const { data, error } = await supabase
+      .from('stats_entries')
+      .select('*')
+      .order('sort_order');
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch stats entries",
+        variant: "destructive",
+      });
+    } else {
+      setStatsEntries(data || []);
+    }
+  };
+
+  const fetchSkillsEntries = async () => {
+    const { data, error } = await supabase
+      .from('skills_entries')
+      .select('*')
+      .order('sort_order');
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch skills entries",
+        variant: "destructive",
+      });
+    } else {
+      setSkillsEntries(data || []);
     }
   };
 
@@ -195,6 +254,54 @@ const ContentEditor = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleSaveStatsEntry = async (entry: Partial<StatsEntry>) => {
+    setLoading(true);
+    const { error } = await supabase
+      .from('stats_entries')
+      .update(entry)
+      .eq('id', entry.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update stats entry",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Stats entry updated successfully!",
+      });
+      setEditingStatsEntry(null);
+      fetchStatsEntries();
+    }
+    setLoading(false);
+  };
+
+  const handleSaveSkillsEntry = async (entry: Partial<SkillsEntry>) => {
+    setLoading(true);
+    const { error } = await supabase
+      .from('skills_entries')
+      .update(entry)
+      .eq('id', entry.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update skills entry",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Skills entry updated successfully!",
+      });
+      setEditingSkillsEntry(null);
+      fetchSkillsEntries();
+    }
+    setLoading(false);
   };
 
   const heroSections = contentSections.filter(s => s.section_key.includes('hero'));
@@ -491,6 +598,189 @@ const ContentEditor = () => {
                     ) : (
                       <div className="prose max-w-none">
                         <div dangerouslySetInnerHTML={{ __html: section.content || '' }} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Stats Boxes Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Stats Boxes</CardTitle>
+              <CardDescription>Edit individual statistic boxes (13+, 500+, etc.)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {statsEntries.map((entry) => (
+                  <div key={entry.id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <h3 className="font-semibold">{entry.label}</h3>
+                        <p className="text-sm text-gray-600">{entry.number} - {entry.description}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingStatsEntry(entry.id)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    </div>
+                    
+                    {editingStatsEntry === entry.id ? (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor={`number-${entry.id}`}>Number</Label>
+                            <Input
+                              id={`number-${entry.id}`}
+                              defaultValue={entry.number}
+                              onBlur={(e) => handleSaveStatsEntry({ id: entry.id, number: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`icon-${entry.id}`}>Icon Name</Label>
+                            <Input
+                              id={`icon-${entry.id}`}
+                              defaultValue={entry.icon_name}
+                              placeholder="Shield, Server, Users, Award, etc."
+                              onBlur={(e) => handleSaveStatsEntry({ id: entry.id, icon_name: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor={`label-${entry.id}`}>Label</Label>
+                            <Input
+                              id={`label-${entry.id}`}
+                              defaultValue={entry.label}
+                              onBlur={(e) => handleSaveStatsEntry({ id: entry.id, label: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`color-${entry.id}`}>Color Class</Label>
+                            <Input
+                              id={`color-${entry.id}`}
+                              defaultValue={entry.color_class}
+                              placeholder="text-blue-500, text-green-500, etc."
+                              onBlur={(e) => handleSaveStatsEntry({ id: entry.id, color_class: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor={`description-${entry.id}`}>Description</Label>
+                          <Input
+                            id={`description-${entry.id}`}
+                            defaultValue={entry.description}
+                            onBlur={(e) => handleSaveStatsEntry({ id: entry.id, description: e.target.value })}
+                          />
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setEditingStatsEntry(null)}
+                        >
+                          Done
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-600">
+                        <p><strong>Number:</strong> {entry.number}</p>
+                        <p><strong>Icon:</strong> {entry.icon_name}</p>
+                        <p><strong>Label:</strong> {entry.label}</p>
+                        <p><strong>Description:</strong> {entry.description}</p>
+                        <p><strong>Color:</strong> {entry.color_class}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Skills Boxes Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Skills Boxes</CardTitle>
+              <CardDescription>Edit individual skill category boxes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {skillsEntries.map((entry) => (
+                  <div key={entry.id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <h3 className="font-semibold">{entry.title}</h3>
+                        <p className="text-sm text-gray-600">{entry.skills.length} skills</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingSkillsEntry(entry.id)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    </div>
+                    
+                    {editingSkillsEntry === entry.id ? (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor={`skills-title-${entry.id}`}>Title</Label>
+                            <Input
+                              id={`skills-title-${entry.id}`}
+                              defaultValue={entry.title}
+                              onBlur={(e) => handleSaveSkillsEntry({ id: entry.id, title: e.target.value })}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`skills-icon-${entry.id}`}>Icon Name</Label>
+                            <Input
+                              id={`skills-icon-${entry.id}`}
+                              defaultValue={entry.icon_name}
+                              placeholder="Server, Shield, Code, Database, etc."
+                              onBlur={(e) => handleSaveSkillsEntry({ id: entry.id, icon_name: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor={`skills-color-${entry.id}`}>Color Class</Label>
+                          <Input
+                            id={`skills-color-${entry.id}`}
+                            defaultValue={entry.color_class}
+                            placeholder="text-blue-400, text-red-400, etc."
+                            onBlur={(e) => handleSaveSkillsEntry({ id: entry.id, color_class: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor={`skills-list-${entry.id}`}>Skills (comma separated)</Label>
+                          <Input
+                            id={`skills-list-${entry.id}`}
+                            defaultValue={entry.skills.join(', ')}
+                            placeholder="Skill 1, Skill 2, Skill 3"
+                            onBlur={(e) => {
+                              const skillsArray = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+                              handleSaveSkillsEntry({ id: entry.id, skills: skillsArray });
+                            }}
+                          />
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setEditingSkillsEntry(null)}
+                        >
+                          Done
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-600">
+                        <p><strong>Title:</strong> {entry.title}</p>
+                        <p><strong>Icon:</strong> {entry.icon_name}</p>
+                        <p><strong>Color:</strong> {entry.color_class}</p>
+                        <p><strong>Skills:</strong> {entry.skills.join(', ')}</p>
                       </div>
                     )}
                   </div>

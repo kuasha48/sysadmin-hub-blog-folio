@@ -18,6 +18,25 @@ interface ContactInfo {
   address: string;
 }
 
+interface StatsEntry {
+  id: string;
+  icon_name: string;
+  number: string;
+  label: string;
+  description: string;
+  color_class: string;
+  sort_order: number;
+}
+
+interface SkillsEntry {
+  id: string;
+  title: string;
+  icon_name: string;
+  color_class: string;
+  skills: string[];
+  sort_order: number;
+}
+
 export const useContent = (sectionKey?: string) => {
   const [content, setContent] = useState<ContentSection | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,4 +86,52 @@ export const useContactInfo = () => {
   };
 
   return { contactInfo, loading, refetch: fetchContactInfo };
+};
+
+export const useStatsEntries = () => {
+  const [statsEntries, setStatsEntries] = useState<StatsEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStatsEntries();
+  }, []);
+
+  const fetchStatsEntries = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('stats_entries')
+      .select('*')
+      .order('sort_order');
+
+    if (!error && data) {
+      setStatsEntries(data);
+    }
+    setLoading(false);
+  };
+
+  return { statsEntries, loading, refetch: fetchStatsEntries };
+};
+
+export const useSkillsEntries = () => {
+  const [skillsEntries, setSkillsEntries] = useState<SkillsEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchSkillsEntries();
+  }, []);
+
+  const fetchSkillsEntries = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('skills_entries')
+      .select('*')
+      .order('sort_order');
+
+    if (!error && data) {
+      setSkillsEntries(data);
+    }
+    setLoading(false);
+  };
+
+  return { skillsEntries, loading, refetch: fetchSkillsEntries };
 };
