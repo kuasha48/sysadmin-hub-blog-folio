@@ -6,12 +6,19 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useSEO } from '@/hooks/useSEO';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Globe, BarChart, FileText } from 'lucide-react';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { Settings, Globe, BarChart, FileText, User, Mail } from 'lucide-react';
 
 const SiteSettingsEditor = () => {
   const { siteSettings, updateSiteSetting, loading } = useSEO();
   const { toast } = useToast();
+  const { getCredentials, updateCredentials } = useAdminAuth();
   const [saving, setSaving] = useState<string | null>(null);
+  const [adminData, setAdminData] = useState(() => getCredentials() || { username: '', password: '', email: '' });
+  const [emailjsConfig, setEmailjsConfig] = useState(() => {
+    const stored = localStorage.getItem('emailjs_config');
+    return stored ? JSON.parse(stored) : { serviceId: '', templateId: '', publicKey: '' };
+  });
 
   const handleUpdateSetting = async (key: string, value: string) => {
     setSaving(key);
@@ -37,12 +44,112 @@ const SiteSettingsEditor = () => {
     return siteSettings.find(s => s.setting_key === key)?.setting_value || '';
   };
 
+  const handleAdminUpdate = (field: string, value: string) => {
+    const newData = { ...adminData, [field]: value };
+    setAdminData(newData);
+    updateCredentials(newData);
+    toast({
+      title: "Success",
+      description: `Admin ${field} updated successfully!`,
+    });
+  };
+
+  const handleEmailjsUpdate = (field: string, value: string) => {
+    const newConfig = { ...emailjsConfig, [field]: value };
+    setEmailjsConfig(newConfig);
+    localStorage.setItem('emailjs_config', JSON.stringify(newConfig));
+    toast({
+      title: "Success",
+      description: `EmailJS ${field} updated successfully!`,
+    });
+  };
+
   if (loading) {
     return <div className="p-4">Loading site settings...</div>;
   }
 
   return (
     <div className="space-y-6">
+      {/* Admin Authentication */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Admin Authentication
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="admin_username">Admin Username</Label>
+            <Input
+              id="admin_username"
+              placeholder="admin"
+              value={adminData.username}
+              onChange={(e) => handleAdminUpdate('username', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="admin_password">Admin Password</Label>
+            <Input
+              id="admin_password"
+              type="password"
+              placeholder="Enter new password"
+              value={adminData.password}
+              onChange={(e) => handleAdminUpdate('password', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="admin_email">Admin Email (for password reset)</Label>
+            <Input
+              id="admin_email"
+              type="email"
+              placeholder="admin@example.com"
+              value={adminData.email}
+              onChange={(e) => handleAdminUpdate('email', e.target.value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* EmailJS Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            EmailJS Configuration
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="emailjs_service">Service ID</Label>
+            <Input
+              id="emailjs_service"
+              placeholder="service_xxxxxxx"
+              value={emailjsConfig.serviceId}
+              onChange={(e) => handleEmailjsUpdate('serviceId', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="emailjs_template">Template ID</Label>
+            <Input
+              id="emailjs_template"
+              placeholder="template_xxxxxxx"
+              value={emailjsConfig.templateId}
+              onChange={(e) => handleEmailjsUpdate('templateId', e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="emailjs_public">Public Key</Label>
+            <Input
+              id="emailjs_public"
+              placeholder="xxxxxxxxxxxxxxxx"
+              value={emailjsConfig.publicKey}
+              onChange={(e) => handleEmailjsUpdate('publicKey', e.target.value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

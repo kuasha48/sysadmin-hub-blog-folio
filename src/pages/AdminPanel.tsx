@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,7 +58,7 @@ interface ContactSubmission {
 }
 
 const AdminPanel = () => {
-  const { user, isAdmin, loading, signOut } = useAuth();
+  const { isAuthenticated, loading, logout } = useAdminAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -92,26 +92,13 @@ const AdminPanel = () => {
   ];
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !isAuthenticated) {
       navigate('/auth');
-      return;
-    }
-    
-    if (!loading && user && !isAdmin) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have admin privileges.",
-        variant: "destructive",
-      });
-      navigate('/');
-      return;
-    }
-
-    if (isAdmin) {
+    } else if (isAuthenticated) {
       fetchPosts();
       fetchContacts();
     }
-  }, [user, isAdmin, loading, navigate]);
+  }, [isAuthenticated, loading, navigate]);
 
   const fetchPosts = async () => {
     const { data, error } = await supabase
@@ -176,7 +163,7 @@ const AdminPanel = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user || !isAdmin) {
+    if (!isAuthenticated) {
       toast({
         title: "Error",
         description: "You must be logged in as admin to create posts",
@@ -202,14 +189,12 @@ const AdminPanel = () => {
         status: formData.status,
         thumbnail_url: thumbnailUrl,
         is_featured: formData.is_featured,
-        author_id: user.id,
+        author_id: 'admin',
         updated_at: new Date().toISOString(),
         ...(formData.status === 'published' && !editingPost && { published_at: new Date().toISOString() })
       };
 
       console.log('Creating post with data:', postData);
-      console.log('Current user:', user);
-      console.log('Is admin:', isAdmin);
 
       if (editingPost) {
         const { error } = await supabase
@@ -307,7 +292,7 @@ const AdminPanel = () => {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    await logout();
     navigate('/');
   };
 

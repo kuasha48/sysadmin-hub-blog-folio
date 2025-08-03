@@ -1,107 +1,180 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Lock, Mail } from 'lucide-react';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 const Auth = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [showReset, setShowReset] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAuthenticated, login, sendPasswordReset, resetPassword } = useAdminAuth();
+  const [searchParams] = useSearchParams();
+
+  const resetToken = searchParams.get('reset');
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session && session.user.email === 'cloudyskybd48@gmail.com') {
-        navigate('/admin');
-      }
-    };
-    checkUser();
-  }, [navigate]);
+    if (isAuthenticated) {
+      navigate('/admin');
+    }
+    if (resetToken) {
+      setShowReset(true);
+    }
+  }, [isAuthenticated, navigate, resetToken]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Only allow the specific admin email
-    if (email !== 'cloudyskybd48@gmail.com') {
-      toast({
-        title: "Access Denied",
-        description: "Invalid credentials.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setLoading(true);
-    
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
 
-    if (error) {
+    try {
+      const success = await login(username, password);
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Logged in successfully!",
+        });
+        navigate('/admin');
+      } else {
+        toast({
+          title: "Error",
+          description: "Invalid credentials.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Invalid credentials.",
+        description: "Login failed. Please try again.",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: "Logged in successfully!",
-      });
-      navigate('/admin');
     }
     setLoading(false);
   };
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Only allow password reset for the admin email
-    if (resetEmail !== 'cloudyskybd48@gmail.com') {
-      toast({
-        title: "Access Denied",
-        description: "Password reset not available for this email.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setLoading(true);
-    
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: `${window.location.origin}/auth`,
-    });
 
-    if (error) {
+    try {
+      const success = await sendPasswordReset(resetEmail);
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Password reset email sent! Check your inbox.",
+        });
+        setShowReset(false);
+      } else {
+        toast({
+          title: "Error",
+          description: "Invalid email address.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: "Failed to send reset email. Please try again.",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: "Password reset email sent! Check your inbox.",
-      });
-      setShowReset(false);
     }
     setLoading(false);
   };
 
+  const handlePasswordResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!resetToken) return;
+
+    setLoading(true);
+    try {
+      const success = await resetPassword(resetToken, newPassword);
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Password reset successfully! You can now login.",
+        });
+        navigate('/auth');
+      } else {
+        toast({
+          title: "Error",
+          description: "Invalid or expired reset token.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reset password. Please try again.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  if (showReset && resetToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Reset Password</CardTitle>
+            <CardDescription>Enter your new password</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordResetSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  required
+                />
+              </div>
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? 'Resetting...' : 'Reset Password'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (showReset) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Reset Password</CardTitle>
@@ -136,7 +209,7 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -148,15 +221,15 @@ const Auth = () => {
         <CardContent>
           <form onSubmit={handleSignIn} className="space-y-4">
             <div>
-              <Label htmlFor="signin-email">Email</Label>
+              <Label htmlFor="signin-username">Username</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="signin-email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="signin-username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="pl-10"
                   required
                 />
@@ -165,7 +238,7 @@ const Auth = () => {
             <div>
               <Label htmlFor="signin-password">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="signin-password"
                   type="password"
