@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AdminAuthProvider } from "@/hooks/useAdminAuth";
 import AnalyticsAndChat from "@/components/AnalyticsAndChat";
+import FaviconUpdater from "@/components/FaviconUpdater";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
@@ -27,6 +28,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AdminAuthProvider>
+        <FaviconUpdater />
         <AnalyticsAndChat />
         <Toaster />
         <Sonner />
