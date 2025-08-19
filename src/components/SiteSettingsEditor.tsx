@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useSEO } from '@/hooks/useSEO';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { Settings, Globe, BarChart, FileText, User, Mail } from 'lucide-react';
+import { Settings, Globe, FileText, User, Mail } from 'lucide-react';
 
 const SiteSettingsEditor = () => {
   const { siteSettings, updateSiteSetting, loading } = useSEO();
@@ -65,7 +65,14 @@ const SiteSettingsEditor = () => {
   };
 
   if (loading) {
-    return <div className="p-4">Loading site settings...</div>;
+    return (
+      <div className="p-8 text-center">
+        <div className="text-lg text-muted-foreground">Loading site settings...</div>
+        <div className="text-sm text-muted-foreground mt-2">
+          If this persists, please check your database connection.
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -217,96 +224,6 @@ const SiteSettingsEditor = () => {
                 onBlur={(e) => {
                   if (e.target.value !== getSetting('default_og_image')) {
                     handleUpdateSetting('default_og_image', e.target.value);
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart className="h-5 w-5" />
-            Analytics & Tracking
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Google Analytics Section */}
-          <div className="space-y-4">
-            <h4 className="font-medium">Google Analytics (GA4)</h4>
-            <div className="space-y-2">
-              <Label htmlFor="enable_ga">Enable Google Analytics</Label>
-              <select
-                id="enable_ga"
-                className="w-full px-3 py-2 border border-input rounded-md"
-                defaultValue={getSetting('enable_ga') || 'false'}
-                onChange={(e) => handleUpdateSetting('enable_ga', e.target.value)}
-              >
-                <option value="false">Disabled</option>
-                <option value="true">Enabled</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ga_measurement_id">GA Measurement ID</Label>
-              <Input
-                id="ga_measurement_id"
-                defaultValue={getSetting('ga_measurement_id')}
-                placeholder="G-V9GB54TCZF"
-                onBlur={(e) => {
-                  if (e.target.value !== getSetting('ga_measurement_id')) {
-                    handleUpdateSetting('ga_measurement_id', e.target.value);
-                  }
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Tawk.to Section */}
-          <div className="space-y-4">
-            <h4 className="font-medium">Tawk.to Live Chat</h4>
-            <div className="space-y-2">
-              <Label htmlFor="enable_tawk">Enable Tawk.to Chat</Label>
-              <select
-                id="enable_tawk"
-                className="w-full px-3 py-2 border border-input rounded-md"
-                defaultValue={getSetting('enable_tawk') || 'false'}
-                onChange={(e) => handleUpdateSetting('enable_tawk', e.target.value)}
-              >
-                <option value="false">Disabled</option>
-                <option value="true">Enabled</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tawk_widget_code">Tawk.to Widget Code</Label>
-              <Textarea
-                id="tawk_widget_code"
-                defaultValue={getSetting('tawk_widget_code')}
-                placeholder="Paste your Tawk.to script code here"
-                rows={6}
-                className="font-mono text-sm"
-                onBlur={(e) => {
-                  if (e.target.value !== getSetting('tawk_widget_code')) {
-                    handleUpdateSetting('tawk_widget_code', e.target.value);
-                  }
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Other Settings */}
-          <div className="space-y-4">
-            <h4 className="font-medium">Search Console</h4>
-            <div className="space-y-2">
-              <Label htmlFor="google_search_console_verification">Google Search Console Verification</Label>
-              <Input
-                id="google_search_console_verification"
-                defaultValue={getSetting('google_search_console_verification')}
-                placeholder="verification code"
-                onBlur={(e) => {
-                  if (e.target.value !== getSetting('google_search_console_verification')) {
-                    handleUpdateSetting('google_search_console_verification', e.target.value);
                   }
                 }}
               />

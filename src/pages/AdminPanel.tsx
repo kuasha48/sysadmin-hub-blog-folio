@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import ContentEditor from '@/components/ContentEditor';
 import SEOEditor from '@/components/SEOEditor';
 import SiteSettingsEditor from '@/components/SiteSettingsEditor';
+import AnalyticsSettings from '@/components/AnalyticsSettings';
 import RichTextEditor from '@/components/RichTextEditor';
 import { 
   Plus, 
@@ -29,7 +30,8 @@ import {
   MessageSquare,
   FileText,
   Search,
-  Settings
+  Settings,
+  BarChart
 } from 'lucide-react';
 
 interface BlogPost {
@@ -537,6 +539,13 @@ const AdminPanel = () => {
               SEO Settings
             </Button>
             <Button
+              variant={activeTab === 'analytics' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('analytics')}
+            >
+              <BarChart className="h-4 w-4 mr-2" />
+              Analytics & Chat
+            </Button>
+            <Button
               variant={activeTab === 'settings' ? 'default' : 'outline'}
               onClick={() => setActiveTab('settings')}
             >
@@ -644,6 +653,9 @@ const AdminPanel = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Analytics & Chat Settings */}
+        {activeTab === 'analytics' && <AnalyticsSettings />}
 
         {/* Content Management */}
         {activeTab === 'content' && <ContentEditor />}
