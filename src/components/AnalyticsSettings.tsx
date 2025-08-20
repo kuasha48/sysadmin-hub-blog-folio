@@ -1,9 +1,9 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useSEO } from '@/hooks/useSEO';
 import { useToast } from '@/hooks/use-toast';
@@ -46,7 +46,8 @@ const AnalyticsSettings = () => {
     await handleUpdateSetting('enable_tawk', enabled.toString());
   };
 
-  if (loading) {
+  // Show loading only if we're actually loading and have no settings data
+  if (loading && siteSettings.length === 0) {
     return (
       <div className="p-8 text-center">
         <div className="text-lg text-muted-foreground">Loading analytics settings...</div>
@@ -93,7 +94,7 @@ const AnalyticsSettings = () => {
               disabled={saving === 'ga_measurement_id'}
             />
             <div className="text-sm text-muted-foreground">
-              Find this in your Google Analytics 4 property settings
+              Find this in your Google Analytics 4 property settings. Go to Admin → Data Streams → Web → Your Stream → Measurement ID
             </div>
           </div>
         </CardContent>
@@ -138,7 +139,7 @@ const AnalyticsSettings = () => {
               disabled={saving === 'tawk_widget_code'}
             />
             <div className="text-sm text-muted-foreground">
-              Copy the complete script code from your Tawk.to dashboard
+              Copy the complete script code from your Tawk.to dashboard → Administration → Chat Widget → Direct Chat Link
             </div>
           </div>
         </CardContent>
@@ -167,7 +168,7 @@ const AnalyticsSettings = () => {
               disabled={saving === 'google_search_console_verification'}
             />
             <div className="text-sm text-muted-foreground">
-              Find this in Google Search Console → Settings → Ownership verification
+              Find this in Google Search Console → Settings → Ownership verification → HTML tag method
             </div>
           </div>
         </CardContent>
