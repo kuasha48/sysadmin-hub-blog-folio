@@ -14,11 +14,18 @@ const AnalyticsAndChat = () => {
 
   useEffect(() => {
     // Wait for site settings to load
-    if (siteSettings.length === 0) return;
+    if (siteSettings.length === 0) {
+      console.log('AnalyticsAndChat: Waiting for site settings to load...');
+      return;
+    }
+
+    console.log('AnalyticsAndChat: Site settings loaded, processing analytics and chat...');
 
     // Google Analytics
     const enableGA = getSiteSetting('enable_ga') === 'true';
     const gaMeasurementId = getSiteSetting('ga_measurement_id');
+
+    console.log('GA Settings:', { enableGA, gaMeasurementId });
 
     if (enableGA && gaMeasurementId) {
       // Remove existing GA scripts
@@ -48,55 +55,97 @@ const AnalyticsAndChat = () => {
     const enableTawk = getSiteSetting('enable_tawk') === 'true';
     const tawkWidgetCode = getSiteSetting('tawk_widget_code');
 
+    console.log('Tawk Settings:', { 
+      enableTawk, 
+      hasCode: !!tawkWidgetCode, 
+      codeLength: tawkWidgetCode?.length || 0,
+      codePreview: tawkWidgetCode?.substring(0, 100) + '...'
+    });
+
     if (enableTawk && tawkWidgetCode && tawkWidgetCode.trim()) {
-      console.log('Loading Tawk.to with code:', tawkWidgetCode.substring(0, 100) + '...');
+      console.log('Processing Tawk.to chat widget...');
       
       // Remove existing Tawk scripts and widgets
-      const existingTawkScripts = document.querySelectorAll('script[src*="tawk.to"]');
+      const existingTawkScripts = document.querySelectorAll('script[src*="tawk.to"], script[src*="embed.tawk.to"]');
+      console.log('Removing existing Tawk scripts:', existingTawkScripts.length);
       existingTawkScripts.forEach(script => script.remove());
       
-      // Remove existing Tawk widget if present
-      const existingWidget = document.getElementById('tawk-to-container');
-      if (existingWidget) {
-        existingWidget.remove();
-      }
+      // Remove existing Tawk widget containers
+      const existingWidgets = document.querySelectorAll('#tawk-to-container, [id*="tawk"], .tawk-embed');
+      console.log('Removing existing Tawk widgets:', existingWidgets.length);
+      existingWidgets.forEach(widget => widget.remove());
       
-      // Clean any existing Tawk_API
+      // Clean any existing Tawk_API and related globals
       if (window.Tawk_API) {
+        console.log('Cleaning existing Tawk_API');
         delete window.Tawk_API;
+      }
+
+      // Clear any existing Tawk timers or intervals
+      if ((window as any).Tawk_LoadStart) {
+        delete (window as any).Tawk_LoadStart;
       }
 
       try {
         // Extract the script content properly
-        let scriptContent = tawkWidgetCode;
+        let scriptContent = tawkWidgetCode.trim();
         
-        // Remove script tags if they exist
-        scriptContent = scriptContent.replace(/<script[^>]*>/gi, '').replace(/<\/script>/gi, '');
+        // Remove any HTML script tags if they exist
+        scriptContent = scriptContent.replace(/<script[^>]*>/gi, '').replace(/<\/script>/gi, '').trim();
+        
+        console.log('Cleaned script content length:', scriptContent.length);
+        console.log('Script content preview:', scriptContent.substring(0, 200) + '...');
         
         // Create and inject the script
         const scriptElement = document.createElement('script');
         scriptElement.type = 'text/javascript';
+        scriptElement.id = 'tawk-to-script';
         scriptElement.innerHTML = scriptContent;
         
-        // Add to body instead of head for better compatibility
-        document.body.appendChild(scriptElement);
+        // Add to document head for better script execution
+        document.head.appendChild(scriptElement);
 
-        console.log('Tawk.to Live Chat script injected successfully');
+        console.log('Tawk.to script element created and appended to head');
         
-        // Check if Tawk_API is available after a short delay
-        setTimeout(() => {
+        // Wait for script to execute and check for Tawk_API
+        let checkAttempts = 0;
+        const maxAttempts = 10;
+        
+        const checkTawkAPI = () => {
+          checkAttempts++;
+          console.log(`Checking for Tawk_API (attempt ${checkAttempts}/${maxAttempts})`);
+          
           if (window.Tawk_API) {
-            console.log('Tawk.to Live Chat is ready');
+            console.log('✅ Tawk.to Live Chat API is ready!');
+            
+            // Additional check for the widget
+            setTimeout(() => {
+              const widget = document.querySelector('[src*="tawk.to"], [id*="tawk"]');
+              if (widget) {
+                console.log('✅ Tawk.to widget element found:', widget);
+              } else {
+                console.warn('⚠️ Tawk.to API ready but widget element not found');
+              }
+            }, 1000);
+            
+          } else if (checkAttempts < maxAttempts) {
+            setTimeout(checkTawkAPI, 1000);
           } else {
-            console.warn('Tawk.to Live Chat may not have loaded correctly');
+            console.error('❌ Tawk.to Live Chat failed to load after multiple attempts');
+            console.log('Current window properties:', Object.keys(window).filter(key => key.toLowerCase().includes('tawk')));
           }
-        }, 2000);
+        };
+        
+        // Start checking after a brief delay
+        setTimeout(checkTawkAPI, 500);
         
       } catch (error) {
-        console.error('Error loading Tawk.to Live Chat:', error);
+        console.error('❌ Error loading Tawk.to Live Chat:', error);
       }
-    } else if (enableTawk) {
-      console.warn('Tawk.to is enabled but no widget code provided');
+    } else if (enableTawk && !tawkWidgetCode) {
+      console.warn('⚠️ Tawk.to is enabled but no widget code provided');
+    } else if (!enableTawk) {
+      console.log('ℹ️ Tawk.to chat is disabled');
     }
   }, [getSiteSetting, siteSettings]);
 

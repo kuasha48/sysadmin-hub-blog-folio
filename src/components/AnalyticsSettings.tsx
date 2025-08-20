@@ -5,14 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 import { useSEO } from '@/hooks/useSEO';
 import { useToast } from '@/hooks/use-toast';
-import { BarChart, MessageCircle, Globe } from 'lucide-react';
+import { BarChart, MessageCircle, Globe, Save } from 'lucide-react';
 
 const AnalyticsSettings = () => {
   const { siteSettings, updateSiteSetting, loading } = useSEO();
   const { toast } = useToast();
   const [saving, setSaving] = useState<string | null>(null);
+  const [gaId, setGaId] = useState('');
+  const [tawkCode, setTawkCode] = useState('');
+  const [searchConsoleCode, setSearchConsoleCode] = useState('');
 
   const handleUpdateSetting = async (key: string, value: string) => {
     setSaving(key);
@@ -37,6 +41,15 @@ const AnalyticsSettings = () => {
   const getSetting = (key: string) => {
     return siteSettings.find(s => s.setting_key === key)?.setting_value || '';
   };
+
+  // Initialize local state when siteSettings change
+  React.useEffect(() => {
+    if (siteSettings.length > 0) {
+      setGaId(getSetting('ga_measurement_id'));
+      setTawkCode(getSetting('tawk_widget_code'));
+      setSearchConsoleCode(getSetting('google_search_console_verification'));
+    }
+  }, [siteSettings]);
 
   const handleToggleGA = async (enabled: boolean) => {
     await handleUpdateSetting('enable_ga', enabled.toString());
@@ -82,17 +95,23 @@ const AnalyticsSettings = () => {
 
           <div className="space-y-2">
             <Label htmlFor="ga_measurement_id">GA Measurement ID</Label>
-            <Input
-              id="ga_measurement_id"
-              defaultValue={getSetting('ga_measurement_id')}
-              placeholder="G-V9GB54TCZF"
-              onBlur={(e) => {
-                if (e.target.value !== getSetting('ga_measurement_id')) {
-                  handleUpdateSetting('ga_measurement_id', e.target.value);
-                }
-              }}
-              disabled={saving === 'ga_measurement_id'}
-            />
+            <div className="flex gap-2">
+              <Input
+                id="ga_measurement_id"
+                value={gaId}
+                onChange={(e) => setGaId(e.target.value)}
+                placeholder="G-V9GB54TCZF"
+                disabled={saving === 'ga_measurement_id'}
+              />
+              <Button
+                onClick={() => handleUpdateSetting('ga_measurement_id', gaId)}
+                disabled={saving === 'ga_measurement_id' || gaId === getSetting('ga_measurement_id')}
+                size="sm"
+              >
+                <Save className="h-4 w-4 mr-1" />
+                Save
+              </Button>
+            </div>
             <div className="text-sm text-muted-foreground">
               Find this in your Google Analytics 4 property settings. Go to Admin → Data Streams → Web → Your Stream → Measurement ID
             </div>
@@ -127,17 +146,21 @@ const AnalyticsSettings = () => {
             <Label htmlFor="tawk_widget_code">Tawk.to Widget Code</Label>
             <Textarea
               id="tawk_widget_code"
-              defaultValue={getSetting('tawk_widget_code')}
+              value={tawkCode}
+              onChange={(e) => setTawkCode(e.target.value)}
               placeholder="Paste your complete Tawk.to script code here..."
               rows={8}
               className="font-mono text-sm"
-              onBlur={(e) => {
-                if (e.target.value !== getSetting('tawk_widget_code')) {
-                  handleUpdateSetting('tawk_widget_code', e.target.value);
-                }
-              }}
               disabled={saving === 'tawk_widget_code'}
             />
+            <Button
+              onClick={() => handleUpdateSetting('tawk_widget_code', tawkCode)}
+              disabled={saving === 'tawk_widget_code' || tawkCode === getSetting('tawk_widget_code')}
+              className="mt-2"
+            >
+              <Save className="h-4 w-4 mr-1" />
+              Save Tawk.to Code
+            </Button>
             <div className="text-sm text-muted-foreground">
               Copy the complete script code from your Tawk.to dashboard → Administration → Chat Widget → Direct Chat Link
             </div>
@@ -156,17 +179,23 @@ const AnalyticsSettings = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="google_search_console_verification">Google Search Console Verification Code</Label>
-            <Input
-              id="google_search_console_verification"
-              defaultValue={getSetting('google_search_console_verification')}
-              placeholder="verification code"
-              onBlur={(e) => {
-                if (e.target.value !== getSetting('google_search_console_verification')) {
-                  handleUpdateSetting('google_search_console_verification', e.target.value);
-                }
-              }}
-              disabled={saving === 'google_search_console_verification'}
-            />
+            <div className="flex gap-2">
+              <Input
+                id="google_search_console_verification"
+                value={searchConsoleCode}
+                onChange={(e) => setSearchConsoleCode(e.target.value)}
+                placeholder="verification code"
+                disabled={saving === 'google_search_console_verification'}
+              />
+              <Button
+                onClick={() => handleUpdateSetting('google_search_console_verification', searchConsoleCode)}
+                disabled={saving === 'google_search_console_verification' || searchConsoleCode === getSetting('google_search_console_verification')}
+                size="sm"
+              >
+                <Save className="h-4 w-4 mr-1" />
+                Save
+              </Button>
+            </div>
             <div className="text-sm text-muted-foreground">
               Find this in Google Search Console → Settings → Ownership verification → HTML tag method
             </div>
