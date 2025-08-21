@@ -13,6 +13,9 @@ const AnalyticsAndChat = () => {
   const { getSiteSetting, siteSettings } = useSEO();
 
   useEffect(() => {
+    console.log('AnalyticsAndChat: useEffect triggered, siteSettings length:', siteSettings.length);
+    console.log('AnalyticsAndChat: All site settings:', siteSettings);
+    
     // Wait for site settings to load
     if (siteSettings.length === 0) {
       console.log('AnalyticsAndChat: Waiting for site settings to load...');
