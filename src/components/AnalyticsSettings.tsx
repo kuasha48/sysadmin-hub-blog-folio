@@ -21,14 +21,30 @@ const AnalyticsSettings = () => {
   const handleUpdateSetting = async (key: string, value: string) => {
     setSaving(key);
     try {
+      console.log(`Saving ${key} with value:`, value);
       const error = await updateSiteSetting(key, value);
-      if (error) throw error;
+      if (error) {
+        console.error(`Error saving ${key}:`, error);
+        throw error;
+      }
+      
+      console.log(`Successfully saved ${key}`);
+      
+      // Update local state to reflect the saved value
+      if (key === 'tawk_widget_code') {
+        setTawkCode(value);
+      } else if (key === 'ga_measurement_id') {
+        setGaId(value);
+      } else if (key === 'google_search_console_verification') {
+        setSearchConsoleCode(value);
+      }
       
       toast({
         title: "Setting updated",
         description: "Analytics setting has been saved successfully"
       });
     } catch (error) {
+      console.error(`Error updating ${key}:`, error);
       toast({
         title: "Error updating setting",
         description: "Please try again",
