@@ -97,20 +97,48 @@ export const useSEO = (pageType?: string, pageSlug?: string) => {
   };
 
   const updateSiteSetting = async (key: string, value: string) => {
-    const { error } = await supabase
+    console.log(`updateSiteSetting called with key: ${key}, value:`, value);
+    
+    // Use upsert to handle both insert and update cases
+    const { data, error } = await supabase
       .from('site_settings')
-      .update({ setting_value: value })
-      .eq('setting_key', key);
+      .upsert({ 
+        setting_key: key, 
+        setting_value: value,
+        setting_type: 'text' // default type
+      }, {
+        onConflict: 'setting_key'
+      })
+      .select();
+
+    console.log('Upsert result:', { data, error });
 
     if (!error) {
-      setSiteSettings(prev => 
-        prev.map(setting => 
-          setting.setting_key === key 
-            ? { ...setting, setting_value: value }
-            : setting
-        )
-      );
+      // Update local state
+      setSiteSettings(prev => {
+        const existingIndex = prev.findIndex(setting => setting.setting_key === key);
+        if (existingIndex >= 0) {
+          // Update existing
+          return prev.map(setting => 
+            setting.setting_key === key 
+              ? { ...setting, setting_value: value }
+              : setting
+          );
+        } else {
+          // Add new
+          return [...prev, { 
+            setting_key: key, 
+            setting_value: value, 
+            setting_type: 'text',
+            description: '',
+            id: '',
+            created_at: '',
+            updated_at: ''
+          }];
+        }
+      });
     }
+    
     return error;
   };
 
