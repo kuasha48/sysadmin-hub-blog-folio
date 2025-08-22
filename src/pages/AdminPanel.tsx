@@ -16,6 +16,8 @@ import SEOEditor from '@/components/SEOEditor';
 import SiteSettingsEditor from '@/components/SiteSettingsEditor';
 import AnalyticsSettings from '@/components/AnalyticsSettings';
 import RichTextEditor from '@/components/RichTextEditor';
+import CategoryManager from '@/components/CategoryManager';
+import { useCategories } from '@/hooks/useCategories';
 import { 
   Plus, 
   Edit, 
@@ -70,6 +72,7 @@ const AdminPanel = () => {
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [activeTab, setActiveTab] = useState('posts');
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const { categories } = useCategories();
   
   const [formData, setFormData] = useState({
     title: '',
@@ -83,15 +86,21 @@ const AdminPanel = () => {
     is_featured: false
   });
 
-  const categories = [
-    { id: 'infrastructure', name: 'Infrastructure' },
-    { id: 'security', name: 'Security' },
-    { id: 'devops', name: 'DevOps' },
-    { id: 'tutorials', name: 'Tutorials' },
-    { id: 'automation', name: 'Automation' },
-    { id: 'networking', name: 'Networking' },
-    { id: 'cloud', name: 'Cloud Computing' }
-  ];
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      slug: '',
+      excerpt: '',
+      content: '',
+      category: '',
+      tags: '',
+      status: 'draft',
+      thumbnail_url: '',
+      is_featured: false
+    });
+    setThumbnailFile(null);
+    setEditingPost(null);
+  };
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -229,19 +238,7 @@ const AdminPanel = () => {
         });
       }
 
-      setFormData({
-        title: '',
-        slug: '',
-        excerpt: '',
-        content: '',
-        category: '',
-        tags: '',
-        status: 'draft',
-        thumbnail_url: '',
-        is_featured: false
-      });
-      setThumbnailFile(null);
-      setEditingPost(null);
+      resetForm();
       setIsCreateModalOpen(false);
       fetchPosts();
     } catch (error: any) {
@@ -262,11 +259,17 @@ const AdminPanel = () => {
       excerpt: post.excerpt,
       content: post.content,
       category: post.category,
-      tags: post.tags.join(', '),
+      tags: Array.isArray(post.tags) ? post.tags.join(', ') : post.tags || '',
       status: post.status,
       thumbnail_url: post.thumbnail_url || '',
       is_featured: post.is_featured || false
     });
+    setThumbnailFile(null);
+    setIsCreateModalOpen(true);
+  };
+
+  const handleNewPost = () => {
+    resetForm();
     setIsCreateModalOpen(true);
   };
 
@@ -323,9 +326,12 @@ const AdminPanel = () => {
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
-            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+            <Dialog open={isCreateModalOpen} onOpenChange={(open) => {
+              setIsCreateModalOpen(open);
+              if (!open) resetForm();
+            }}>
               <DialogTrigger asChild>
-                <Button className="bg-green-600 hover:bg-green-700">
+                <Button onClick={handleNewPost} className="bg-green-600 hover:bg-green-700">
                   <Plus className="h-4 w-4 mr-2" />
                   New Post
                 </Button>
@@ -414,7 +420,7 @@ const AdminPanel = () => {
                         </SelectTrigger>
                         <SelectContent className="bg-white border-gray-300">
                           {categories.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.id}>
+                            <SelectItem key={cat.slug} value={cat.slug}>
                               {cat.name}
                             </SelectItem>
                           ))}
@@ -525,6 +531,13 @@ const AdminPanel = () => {
               Contact Messages
             </Button>
             <Button
+              variant={activeTab === 'categories' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('categories')}
+            >
+              <Tag className="h-4 w-4 mr-2" />
+              Categories
+            </Button>
+            <Button
               variant={activeTab === 'content' ? 'default' : 'outline'}
               onClick={() => setActiveTab('content')}
             >
@@ -588,7 +601,7 @@ const AdminPanel = () => {
                             )}
                             <span className="text-sm text-gray-500 flex items-center">
                               <Tag className="h-3 w-3 mr-1" />
-                              {categories.find(cat => cat.id === post.category)?.name}
+                              {categories.find(cat => cat.slug === post.category)?.name || post.category}
                             </span>
                             <span className="text-sm text-gray-500 flex items-center">
                               <Calendar className="h-3 w-3 mr-1" />
@@ -620,6 +633,9 @@ const AdminPanel = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Categories Management */}
+        {activeTab === 'categories' && <CategoryManager />}
 
         {/* Contact Messages */}
         {activeTab === 'contacts' && (
