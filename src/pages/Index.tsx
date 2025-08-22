@@ -11,7 +11,12 @@ import SEOHead from '@/components/SEOHead';
 const Index = () => {
   return (
     <div className="min-h-screen">
-      <SEOHead pageType="page" pageSlug="home" />
+      <SEOHead 
+        pageType="page" 
+        pageSlug="home" 
+        customTitle="Azim's Tech - System Administrator & Cloud Expert"
+        customDescription="Expert System Administrator with 13+ years experience in Linux/Unix, cloud computing, virtualization, and DevOps solutions."
+      />
       <Header />
       <Hero />
       <StatsSection />

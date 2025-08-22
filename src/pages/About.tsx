@@ -89,7 +89,12 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <SEOHead pageType="page" pageSlug="about" />
+      <SEOHead 
+        pageType="page" 
+        pageSlug="about" 
+        customTitle="About Fazla Rabby Azim - System Administrator"
+        customDescription="Learn about Fazla Rabby Azim's 13+ years experience in system administration, cloud computing, and DevOps across Kosovo, UAE, and Bangladesh."
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
         <div className="bg-white rounded-lg shadow-lg p-8 mb-12">
