@@ -237,17 +237,22 @@ const AdminPanel = () => {
         ...(formData.status === 'published' && !editingPost && { published_at: new Date().toISOString() })
       };
 
-      console.log('Creating post with data:', postData);
+      console.log('Saving post with data:', postData);
 
       if (editingPost) {
-        const { error } = await supabase
-          .from('blog_posts')
-          .update(postData)
-          .eq('id', editingPost.id);
+        // Use service role endpoint for updates to bypass RLS
+        const response = await fetch(`https://cnuphfizhokzywhsvbln.supabase.co/functions/v1/manage-blog-post/${editingPost.id}`, {
+          method: 'PUT',
+          headers: {
+            'X-Admin-Session': 'admin-authenticated',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(postData)
+        });
 
-        if (error) {
-          console.error('Update error:', error);
-          throw error;
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Update failed: ${response.status}`);
         }
         
         toast({
@@ -283,6 +288,54 @@ const AdminPanel = () => {
     }
   };
 
+  const handleDelete = async (postId: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Error",
+        description: "You must be logged in as admin to delete posts",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      console.log('Deleting post:', postId);
+      
+      // Use service role endpoint for deletion to bypass RLS  
+      const response = await fetch(`https://cnuphfizhokzywhsvbln.supabase.co/functions/v1/manage-blog-post/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-Admin-Session': 'admin-authenticated',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Delete failed: ${response.status}`);
+      }
+
+
+      toast({
+        title: "Success",
+        description: "Blog post deleted successfully!",
+      });
+      
+      fetchPosts();
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete blog post",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleEdit = (post: BlogPost) => {
     setEditingPost(post);
     setFormData({
@@ -305,28 +358,6 @@ const AdminPanel = () => {
     setIsCreateModalOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      const { error } = await supabase
-        .from('blog_posts')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to delete blog post",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: "Blog post deleted successfully!",
-        });
-        fetchPosts();
-      }
-    }
-  };
 
   const handleSignOut = async () => {
     await logout();
