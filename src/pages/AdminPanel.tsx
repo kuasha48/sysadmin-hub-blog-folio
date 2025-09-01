@@ -152,23 +152,55 @@ const AdminPanel = () => {
       .replace(/(^-|-$)/g, '');
   };
 
-  const uploadThumbnail = async (file: File) => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    
-    const { data, error } = await supabase.storage
-      .from('blog-thumbnails')
-      .upload(fileName, file);
+  const uploadThumbnail = async (file: File, postId?: string) => {
+    try {
+      // Generate a unique post ID if not provided (for new posts)
+      const uploadPostId = postId || `temp-${Date.now()}`;
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
 
-    if (error) {
+      console.log('Getting signed upload URL for:', { uploadPostId, fileName });
+
+      // Get signed upload URL from our edge function
+      const signedUrlResponse = await supabase.functions.invoke('create-signed-upload-url', {
+        body: {
+          postId: uploadPostId,
+          filename: fileName,
+          contentType: file.type || 'application/octet-stream'
+        }
+      });
+
+      if (signedUrlResponse.error) {
+        console.error('Failed to get signed URL:', signedUrlResponse.error);
+        throw new Error(signedUrlResponse.error.message || 'Failed to get upload URL');
+      }
+
+      const { signedUrl, publicUrl } = signedUrlResponse.data;
+
+      console.log('Got signed URL, uploading file...');
+
+      // Upload directly to the signed URL
+      const uploadResponse = await fetch(signedUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+        },
+        body: file,
+      });
+
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text().catch(() => 'Unknown error');
+        console.error('Upload failed:', uploadResponse.status, errorText);
+        throw new Error(`Upload failed: ${uploadResponse.status} ${errorText}`);
+      }
+
+      console.log('Upload successful, public URL:', publicUrl);
+      return publicUrl;
+
+    } catch (error) {
+      console.error('Upload error:', error);
       throw error;
     }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('blog-thumbnails')
-      .getPublicUrl(fileName);
-
-    return publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

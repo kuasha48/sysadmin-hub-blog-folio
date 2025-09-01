@@ -1,1 +1,7 @@
 project_id = "cnuphfizhokzywhsvbln"
+
+[functions.create-signed-upload-url]
+verify_jwt = false
+
+[functions.delete-thumbnail]
+verify_jwt = false
