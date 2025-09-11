@@ -1,0 +1,1 @@
+DELETE FROM blog_posts WHERE title = 'test' AND id = 'ca828462-7641-49db-abc2-7bfd29dea610';
