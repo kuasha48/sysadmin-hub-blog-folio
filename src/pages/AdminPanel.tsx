@@ -305,29 +305,42 @@ const AdminPanel = () => {
     try {
       console.log('Deleting post:', postId);
       
-      // Use service role endpoint for deletion to bypass RLS  
-      const response = await fetch(`https://cnuphfizhokzywhsvbln.supabase.co/functions/v1/manage-blog-post/${postId}`, {
+      // First try to delete via edge function
+      const response = await supabase.functions.invoke('manage-blog-post', {
         method: 'DELETE',
         headers: {
           'X-Admin-Session': 'admin-authenticated',
-          'Content-Type': 'application/json'
-        }
+        },
+        body: { postId }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Delete failed: ${response.status}`);
+      if (response.error) {
+        // If edge function fails, try direct database deletion as fallback
+        console.warn('Edge function failed, trying direct deletion:', response.error);
+        
+        const { error: dbError } = await supabase
+          .from('blog_posts')
+          .delete()
+          .eq('id', postId);
+          
+        if (dbError) {
+          throw new Error(dbError.message);
+        }
       }
-
 
       toast({
         title: "Success",
         description: "Blog post deleted successfully!",
       });
       
+      // Always refresh the posts list
       fetchPosts();
     } catch (error: any) {
       console.error('Delete error:', error);
+      
+      // Even if there's an error, refresh the list to show current state
+      fetchPosts();
+      
       toast({
         title: "Error",
         description: error.message || "Failed to delete blog post",
@@ -388,6 +401,14 @@ const AdminPanel = () => {
             <Button onClick={handleSignOut} variant="outline">
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={fetchPosts}
+              className="flex items-center space-x-2"
+            >
+              <Search className="h-4 w-4" />
+              <span>Refresh Posts</span>
             </Button>
             <Dialog open={isCreateModalOpen} onOpenChange={(open) => {
               setIsCreateModalOpen(open);
