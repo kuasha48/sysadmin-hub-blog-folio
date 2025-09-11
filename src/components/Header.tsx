@@ -34,7 +34,7 @@ const Header = () => {
           </Link>
           
           {/* Desktop Navigation - hidden on mobile and tablet */}
-          <nav className="hidden lg:flex space-x-6">
+          <nav className="hidden md:flex space-x-6">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -62,7 +62,7 @@ const Header = () => {
           </nav>
 
           {/* Mobile menu button - visible on tablet and mobile */}
-          <div className="lg:hidden">
+          <div className="md:hidden">
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 text-muted-foreground hover:text-nav-accent transition-colors"
@@ -79,7 +79,7 @@ const Header = () => {
         
         {/* Mobile menu - visible on tablet and mobile */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-header-border">
+          <div className="md:hidden border-t border-header-border">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-nav-hover-bg">
               {navItems.map((item) => {
                 const Icon = item.icon;
