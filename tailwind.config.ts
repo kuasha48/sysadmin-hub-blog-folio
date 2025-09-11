@@ -61,7 +61,13 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Custom semantic colors
+				'header-bg': 'hsl(var(--header-bg))',
+				'header-border': 'hsl(var(--header-border))',
+				'header-text': 'hsl(var(--header-text))',
+				'nav-accent': 'hsl(var(--nav-accent))',
+				'nav-hover-bg': 'hsl(var(--nav-hover-bg))'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
