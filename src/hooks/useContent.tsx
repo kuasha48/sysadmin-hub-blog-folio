@@ -49,14 +49,24 @@ export const useContent = (sectionKey?: string) => {
 
   const fetchContent = async (key: string) => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('content_sections')
-      .select('*')
-      .eq('section_key', key)
-      .single();
+    try {
+      console.log('Fetching content for key:', key);
+      const { data, error } = await supabase
+        .from('content_sections')
+        .select('*')
+        .eq('section_key', key)
+        .maybeSingle(); // Use maybeSingle() instead of single()
 
-    if (!error && data) {
-      setContent(data);
+      console.log('Content fetch result:', { key, data, error });
+      
+      if (!error && data) {
+        setContent(data);
+      } else if (!data) {
+        setContent(null); // Explicitly set to null when no data found
+      }
+    } catch (err) {
+      console.error('Content fetch error:', { key, err });
+      setContent(null);
     }
     setLoading(false);
   };
@@ -74,13 +84,23 @@ export const useContactInfo = () => {
 
   const fetchContactInfo = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('contact_info')
-      .select('*')
-      .single();
+    try {
+      console.log('Fetching contact info...');
+      const { data, error } = await supabase
+        .from('contact_info')
+        .select('*')
+        .maybeSingle(); // Use maybeSingle() instead of single()
 
-    if (!error && data) {
-      setContactInfo(data);
+      console.log('Contact info fetch result:', { data, error });
+      
+      if (!error && data) {
+        setContactInfo(data);
+      } else if (!data) {
+        setContactInfo(null); // Explicitly set to null when no data found
+      }
+    } catch (err) {
+      console.error('Contact info fetch error:', err);
+      setContactInfo(null);
     }
     setLoading(false);
   };
@@ -98,13 +118,23 @@ export const useStatsEntries = () => {
 
   const fetchStatsEntries = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('stats_entries')
-      .select('*')
-      .order('sort_order');
+    try {
+      console.log('Fetching stats entries...');
+      const { data, error } = await supabase
+        .from('stats_entries')
+        .select('*')
+        .order('sort_order');
 
-    if (!error && data) {
-      setStatsEntries(data);
+      console.log('Stats entries fetch result:', { data, error, count: data?.length });
+      
+      if (!error && data) {
+        setStatsEntries(data);
+      } else {
+        setStatsEntries([]); // Set empty array on error
+      }
+    } catch (err) {
+      console.error('Stats entries fetch error:', err);
+      setStatsEntries([]);
     }
     setLoading(false);
   };
@@ -122,13 +152,23 @@ export const useSkillsEntries = () => {
 
   const fetchSkillsEntries = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('skills_entries')
-      .select('*')
-      .order('sort_order');
+    try {
+      console.log('Fetching skills entries...');
+      const { data, error } = await supabase
+        .from('skills_entries')
+        .select('*')
+        .order('sort_order');
 
-    if (!error && data) {
-      setSkillsEntries(data);
+      console.log('Skills entries fetch result:', { data, error, count: data?.length });
+      
+      if (!error && data) {
+        setSkillsEntries(data);
+      } else {
+        setSkillsEntries([]); // Set empty array on error
+      }
+    } catch (err) {
+      console.error('Skills entries fetch error:', err);
+      setSkillsEntries([]);
     }
     setLoading(false);
   };

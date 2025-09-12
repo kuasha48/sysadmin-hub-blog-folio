@@ -44,29 +44,46 @@ export const useSEO = (pageType?: string, pageSlug?: string) => {
   const fetchSEOData = async (type: string, slug?: string) => {
     setLoading(true);
     try {
+      console.log('Fetching SEO data for:', { type, slug });
       const { data, error } = await supabase
         .from('seo_metadata')
         .select('*')
         .eq('page_type', type)
         .eq('page_slug', slug || null)
-        .single();
+        .maybeSingle(); // Use maybeSingle() instead of single() to handle no data gracefully
 
+      console.log('SEO fetch result:', { data, error });
+      
       if (!error && data) {
         setSeoData(data);
+      } else if (!data) {
+        setSeoData(null); // Explicitly set to null when no data found
       }
     } catch (err) {
-      console.warn('SEO data not found for', type, slug);
+      console.warn('SEO data fetch error:', err);
+      setSeoData(null);
     }
     setLoading(false);
   };
 
   const fetchSiteSettings = async () => {
-    const { data, error } = await supabase
-      .from('site_settings')
-      .select('*');
+    try {
+      console.log('Fetching site settings...');
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*');
 
-    if (!error && data) {
-      setSiteSettings(data);
+      console.log('Site settings fetch result:', { data, error, dataLength: data?.length });
+      
+      if (!error && data) {
+        setSiteSettings(data);
+      } else if (error) {
+        console.error('Site settings fetch error:', error);
+        setSiteSettings([]); // Set empty array on error
+      }
+    } catch (err) {
+      console.error('Site settings fetch catch error:', err);
+      setSiteSettings([]);
     }
   };
 
