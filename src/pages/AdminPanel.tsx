@@ -145,6 +145,37 @@ const AdminPanel = () => {
     }
   };
 
+  const handleDeleteContact = async (contactId: string) => {
+    try {
+      console.log('Deleting contact:', contactId);
+      
+      const { error } = await supabase
+        .from('contact_submissions')
+        .delete()
+        .eq('id', contactId);
+          
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      toast({
+        title: "Success",
+        description: "Contact message deleted successfully!",
+      });
+      
+      // Refresh the contacts list
+      fetchContacts();
+    } catch (error: any) {
+      console.error('Delete contact error:', error);
+      
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete contact message",
+        variant: "destructive",
+      });
+    }
+  };
+
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
@@ -729,26 +760,40 @@ const AdminPanel = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {contacts.map((contact) => (
-                  <div key={contact.id} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{contact.name}</h3>
-                        <p className="text-sm text-gray-600">{contact.email}</p>
-                        {contact.mobile && (
-                          <p className="text-sm text-gray-600">{contact.mobile}</p>
-                        )}
-                        {contact.country && (
-                          <p className="text-sm text-gray-600">{contact.country}</p>
-                        )}
+                {contacts.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No contact messages found.</p>
+                ) : (
+                  contacts.map((contact) => (
+                    <div key={contact.id} className="p-4 border rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900">{contact.name}</h3>
+                          <p className="text-sm text-gray-600">{contact.email}</p>
+                          {contact.mobile && (
+                            <p className="text-sm text-gray-600">{contact.mobile}</p>
+                          )}
+                          {contact.country && (
+                            <p className="text-sm text-gray-600">{contact.country}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-gray-500">
+                            {new Date(contact.created_at).toLocaleDateString()}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteContact(contact.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <span className="text-sm text-gray-500">
-                        {new Date(contact.created_at).toLocaleDateString()}
-                      </span>
+                      <p className="text-gray-700 mt-2">{contact.message}</p>
                     </div>
-                    <p className="text-gray-700 mt-2">{contact.message}</p>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>

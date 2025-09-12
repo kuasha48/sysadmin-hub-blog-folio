@@ -29,13 +29,13 @@ const AnalyticsAndChat = () => {
 
     console.log('AnalyticsAndChat: Site settings loaded, processing analytics and chat...');
 
-    // Google Analytics
+    // Google Analytics - only on frontend pages
     const enableGA = getSiteSetting('enable_ga') === 'true';
     const gaMeasurementId = getSiteSetting('ga_measurement_id');
 
-    console.log('GA Settings:', { enableGA, gaMeasurementId });
+    console.log('GA Settings:', { enableGA, gaMeasurementId, isAdminPage });
 
-    if (enableGA && gaMeasurementId) {
+    if (enableGA && gaMeasurementId && !isAdminPage) {
       // Remove existing GA scripts
       const existingGAScripts = document.querySelectorAll('script[src*="googletagmanager.com"]');
       existingGAScripts.forEach(script => script.remove());
@@ -57,6 +57,11 @@ const AnalyticsAndChat = () => {
       document.head.appendChild(script2);
 
       console.log('Google Analytics GA4 loaded with ID:', gaMeasurementId);
+    } else if (enableGA && isAdminPage) {
+      console.log('ℹ️ Google Analytics disabled on admin pages');
+      // Remove GA scripts on admin pages
+      const existingGAScripts = document.querySelectorAll('script[src*="googletagmanager.com"]');
+      existingGAScripts.forEach(script => script.remove());
     }
 
     // Tawk.to Chat - only show on frontend pages
