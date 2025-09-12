@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.manage-blog-post]
 verify_jwt = false
+
+[functions.manage-contacts]
+verify_jwt = false

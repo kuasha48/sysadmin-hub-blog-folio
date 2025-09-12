@@ -29,6 +29,30 @@ const AnalyticsAndChat = () => {
 
     console.log('AnalyticsAndChat: Site settings loaded, processing analytics and chat...');
 
+    // If on admin/auth pages, always remove GA and Tawk then exit early
+    if (isAdminPage) {
+      console.log('Admin page detected -> removing Analytics and Tawk.to');
+      // Remove GA
+      const gaScripts = document.querySelectorAll('script[src*="googletagmanager.com"], script[id="ga-init-script"]');
+      gaScripts.forEach(s => s.remove());
+      // Remove Tawk scripts & widgets and hide if API present
+      try {
+        if (window.Tawk_API && typeof window.Tawk_API.hideWidget === 'function') {
+          window.Tawk_API.hideWidget();
+        }
+      } catch (e) {
+        console.warn('Tawk_API hideWidget error:', e);
+      }
+      const tawkScripts = document.querySelectorAll('script#tawk-to-script, script[src*="tawk.to"], script[src*="embed.tawk.to"]');
+      tawkScripts.forEach(s => s.remove());
+      const tawkWidgets = document.querySelectorAll('#tawk-to-container, [id*="tawk"], .tawk-embed, iframe[src*="tawk.to"]');
+      tawkWidgets.forEach(w => w.remove());
+      // Neutralize globals without deleting
+      (window as any).Tawk_API = undefined;
+      (window as any).Tawk_LoadStart = undefined;
+      return; // Do not load anything on admin/auth
+    }
+
     // Google Analytics - only on frontend pages
     const enableGA = getSiteSetting('enable_ga') === 'true';
     const gaMeasurementId = getSiteSetting('ga_measurement_id');
@@ -162,14 +186,20 @@ const AnalyticsAndChat = () => {
       console.log('ℹ️ Tawk.to chat is disabled');
     } else if (isAdminPage) {
       console.log('ℹ️ Tawk.to chat hidden on admin pages');
-      // Remove chat widget if switching to admin
-      const existingTawkScripts = document.querySelectorAll('script[src*="tawk.to"], script[src*="embed.tawk.to"]');
-      existingTawkScripts.forEach(script => script.remove());
-      const existingWidgets = document.querySelectorAll('#tawk-to-container, [id*="tawk"], .tawk-embed');
-      existingWidgets.forEach(widget => widget.remove());
-      if (window.Tawk_API) {
-        window.Tawk_API = undefined; // Set to undefined instead of delete
+      // Hide via API if available
+      try {
+        if (window.Tawk_API && typeof window.Tawk_API.hideWidget === 'function') {
+          window.Tawk_API.hideWidget();
+        }
+      } catch (e) {
+        console.warn('Tawk_API hideWidget error:', e);
       }
+      // Remove chat widget if switching to admin
+      const existingTawkScripts = document.querySelectorAll('script#tawk-to-script, script[src*="tawk.to"], script[src*="embed.tawk.to"]');
+      existingTawkScripts.forEach(script => script.remove());
+      const existingWidgets = document.querySelectorAll('#tawk-to-container, [id*="tawk"], .tawk-embed, iframe[src*="tawk.to"]');
+      existingWidgets.forEach(widget => widget.remove());
+      window.Tawk_API = undefined;
     }
   }, [getSiteSetting, siteSettings, location.pathname]);
 

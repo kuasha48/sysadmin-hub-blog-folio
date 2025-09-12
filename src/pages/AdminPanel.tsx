@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import ContentEditor from '@/components/ContentEditor';
@@ -68,6 +69,7 @@ const AdminPanel = () => {
   
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [contacts, setContacts] = useState<ContactSubmission[]>([]);
+  const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [activeTab, setActiveTab] = useState('posts');
@@ -129,19 +131,25 @@ const AdminPanel = () => {
   };
 
   const fetchContacts = async () => {
-    const { data, error } = await supabase
-      .from('contact_submissions')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch contact submissions",
-        variant: "destructive",
+    try {
+      const response = await supabase.functions.invoke('manage-contacts', {
+        body: { action: 'list' },
+        headers: { 'X-Admin-Session': 'admin-authenticated' }
       });
-    } else {
-      setContacts(data || []);
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to fetch contact submissions');
+      }
+
+      setContacts(response.data?.contacts || []);
+    } catch (err: any) {
+      console.error('Fetch contacts error:', err);
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to fetch contact submissions',
+        variant: 'destructive',
+      });
+      setContacts([]);
     }
   };
 
@@ -149,30 +157,51 @@ const AdminPanel = () => {
     try {
       console.log('Deleting contact:', contactId);
       
-      const { error } = await supabase
-        .from('contact_submissions')
-        .delete()
-        .eq('id', contactId);
-          
-      if (error) {
-        throw new Error(error.message);
+      const response = await supabase.functions.invoke('manage-contacts', {
+        body: { action: 'delete', id: contactId },
+        headers: { 'X-Admin-Session': 'admin-authenticated' }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to delete contact message');
       }
 
       toast({
-        title: "Success",
-        description: "Contact message deleted successfully!",
+        title: 'Success',
+        description: 'Contact message deleted successfully!',
       });
       
-      // Refresh the contacts list
+      setSelectedContacts(prev => prev.filter(id => id !== contactId));
       fetchContacts();
     } catch (error: any) {
       console.error('Delete contact error:', error);
       
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete contact message",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Failed to delete contact message',
+        variant: 'destructive',
       });
+    }
+  };
+
+  const toggleContactSelection = (id: string) => {
+    setSelectedContacts(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const handleDeleteSelectedContacts = async () => {
+    try {
+      if (selectedContacts.length === 0) return;
+      const response = await supabase.functions.invoke('manage-contacts', {
+        body: { action: 'delete', ids: selectedContacts },
+        headers: { 'X-Admin-Session': 'admin-authenticated' }
+      });
+      if (response.error) throw new Error(response.error.message || 'Failed to delete selected messages');
+      toast({ title: 'Success', description: `${selectedContacts.length} message(s) deleted` });
+      setSelectedContacts([]);
+      fetchContacts();
+    } catch (error: any) {
+      console.error('Bulk delete error:', error);
+      toast({ title: 'Error', description: error.message || 'Failed to delete selected messages', variant: 'destructive' });
     }
   };
 
@@ -755,8 +784,21 @@ const AdminPanel = () => {
         {/* Contact Messages */}
         {activeTab === 'contacts' && (
           <Card>
-            <CardHeader>
+            <CardHeader className="flex items-center justify-between">
               <CardTitle>Contact Messages</CardTitle>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={fetchContacts}>
+                  Refresh
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={handleDeleteSelectedContacts}
+                  disabled={selectedContacts.length === 0}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Selected {selectedContacts.length > 0 ? `(${selectedContacts.length})` : ''}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -766,15 +808,22 @@ const AdminPanel = () => {
                   contacts.map((contact) => (
                     <div key={contact.id} className="p-4 border rounded-lg">
                       <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{contact.name}</h3>
-                          <p className="text-sm text-gray-600">{contact.email}</p>
-                          {contact.mobile && (
-                            <p className="text-sm text-gray-600">{contact.mobile}</p>
-                          )}
-                          {contact.country && (
-                            <p className="text-sm text-gray-600">{contact.country}</p>
-                          )}
+                        <div className="flex items-start gap-3 w-full">
+                          <Checkbox
+                            checked={selectedContacts.includes(contact.id)}
+                            onCheckedChange={() => toggleContactSelection(contact.id)}
+                            aria-label="Select contact message"
+                          />
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900">{contact.name}</h3>
+                            <p className="text-sm text-gray-600">{contact.email}</p>
+                            {contact.mobile && (
+                              <p className="text-sm text-gray-600">{contact.mobile}</p>
+                            )}
+                            {contact.country && (
+                              <p className="text-sm text-gray-600">{contact.country}</p>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="text-sm text-gray-500">
