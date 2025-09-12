@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useSEO } from '@/hooks/useSEO';
 
 declare global {
@@ -11,6 +12,10 @@ declare global {
 
 const AnalyticsAndChat = () => {
   const { getSiteSetting, siteSettings } = useSEO();
+  const location = useLocation();
+  
+  // Don't show chat on admin pages
+  const isAdminPage = location.pathname.startsWith('/admin') || location.pathname.startsWith('/auth');
 
   useEffect(() => {
     console.log('AnalyticsAndChat: useEffect triggered, siteSettings length:', siteSettings.length);
@@ -54,7 +59,7 @@ const AnalyticsAndChat = () => {
       console.log('Google Analytics GA4 loaded with ID:', gaMeasurementId);
     }
 
-    // Tawk.to Chat
+    // Tawk.to Chat - only show on frontend pages
     const enableTawk = getSiteSetting('enable_tawk') === 'true';
     const tawkWidgetCode = getSiteSetting('tawk_widget_code');
 
@@ -62,10 +67,11 @@ const AnalyticsAndChat = () => {
       enableTawk, 
       hasCode: !!tawkWidgetCode, 
       codeLength: tawkWidgetCode?.length || 0,
-      codePreview: tawkWidgetCode?.substring(0, 100) + '...'
+      codePreview: tawkWidgetCode?.substring(0, 100) + '...',
+      isAdminPage
     });
 
-    if (enableTawk && tawkWidgetCode && tawkWidgetCode.trim()) {
+    if (enableTawk && tawkWidgetCode && tawkWidgetCode.trim() && !isAdminPage) {
       console.log('Processing Tawk.to chat widget...');
       
       // Remove existing Tawk scripts and widgets
@@ -149,8 +155,18 @@ const AnalyticsAndChat = () => {
       console.warn('⚠️ Tawk.to is enabled but no widget code provided');
     } else if (!enableTawk) {
       console.log('ℹ️ Tawk.to chat is disabled');
+    } else if (isAdminPage) {
+      console.log('ℹ️ Tawk.to chat hidden on admin pages');
+      // Remove chat widget if switching to admin
+      const existingTawkScripts = document.querySelectorAll('script[src*="tawk.to"], script[src*="embed.tawk.to"]');
+      existingTawkScripts.forEach(script => script.remove());
+      const existingWidgets = document.querySelectorAll('#tawk-to-container, [id*="tawk"], .tawk-embed');
+      existingWidgets.forEach(widget => widget.remove());
+      if (window.Tawk_API) {
+        delete window.Tawk_API;
+      }
     }
-  }, [getSiteSetting, siteSettings]);
+  }, [getSiteSetting, siteSettings, location.pathname]);
 
   return null;
 };
