@@ -29,49 +29,49 @@ const App = () => (
     <TooltipProvider>
       <AdminAuthProvider>
         <FaviconUpdater />
-        <AnalyticsAndChat />
         <Toaster />
         <Sonner />
         <BrowserRouter>
-        <div className="min-h-screen flex flex-col">
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={
-              <>
-                <Header />
-                <About />
-                <Footer />
-              </>
-            } />
-            <Route path="/blog" element={
-              <>
-                <Header />
-                <BlogPublic />
-                <Footer />
-              </>
-            } />
-            <Route path="/blog/:slug" element={
-              <>
-                <Header />
-                <BlogPost />
-                <Footer />
-              </>
-            } />
-            <Route path="/contact" element={
-              <>
-                <Header />
-                <Contact />
-                <Footer />
-              </>
-            } />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/sitemap.xml" element={<Sitemap />} />
-            <Route path="/robots.txt" element={<Robots />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </div>
-      </BrowserRouter>
+          <AnalyticsAndChat />
+          <div className="min-h-screen flex flex-col">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={
+                <>
+                  <Header />
+                  <About />
+                  <Footer />
+                </>
+              } />
+              <Route path="/blog" element={
+                <>
+                  <Header />
+                  <BlogPublic />
+                  <Footer />
+                </>
+              } />
+              <Route path="/blog/:slug" element={
+                <>
+                  <Header />
+                  <BlogPost />
+                  <Footer />
+                </>
+              } />
+              <Route path="/contact" element={
+                <>
+                  <Header />
+                  <Contact />
+                  <Footer />
+                </>
+              } />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/sitemap.xml" element={<Sitemap />} />
+              <Route path="/robots.txt" element={<Robots />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
+        </BrowserRouter>
       </AdminAuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
