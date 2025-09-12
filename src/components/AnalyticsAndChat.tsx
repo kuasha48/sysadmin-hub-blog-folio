@@ -87,12 +87,12 @@ const AnalyticsAndChat = () => {
       // Clean any existing Tawk_API and related globals
       if (window.Tawk_API) {
         console.log('Cleaning existing Tawk_API');
-        delete window.Tawk_API;
+        window.Tawk_API = undefined; // Set to undefined instead of delete
       }
 
       // Clear any existing Tawk timers or intervals
       if ((window as any).Tawk_LoadStart) {
-        delete (window as any).Tawk_LoadStart;
+        (window as any).Tawk_LoadStart = undefined; // Set to undefined instead of delete
       }
 
       try {
@@ -163,7 +163,7 @@ const AnalyticsAndChat = () => {
       const existingWidgets = document.querySelectorAll('#tawk-to-container, [id*="tawk"], .tawk-embed');
       existingWidgets.forEach(widget => widget.remove());
       if (window.Tawk_API) {
-        delete window.Tawk_API;
+        window.Tawk_API = undefined; // Set to undefined instead of delete
       }
     }
   }, [getSiteSetting, siteSettings, location.pathname]);
