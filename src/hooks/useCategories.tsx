@@ -16,15 +16,25 @@ export const useCategories = () => {
 
   const fetchCategories = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*')
-      .order('name');
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
 
-    if (!error && data) {
-      setCategories(data);
+      if (error) {
+        console.error('Error fetching categories:', error);
+        throw error;
+      }
+
+      if (data) {
+        setCategories(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -32,43 +42,70 @@ export const useCategories = () => {
   }, []);
 
   const createCategory = async (categoryData: { name: string; slug: string; description?: string }) => {
-    const { data, error } = await supabase
-      .from('categories')
-      .insert([categoryData])
-      .select()
-      .single();
+    try {
+      console.log('Creating category:', categoryData);
+      const { data, error } = await supabase
+        .from('categories')
+        .insert([categoryData])
+        .select()
+        .single();
 
-    if (!error && data) {
-      setCategories([...categories, data]);
-      return data;
+      if (error) {
+        console.error('Error creating category:', error);
+        throw error;
+      }
+
+      if (data) {
+        setCategories([...categories, data]);
+        return data;
+      }
+    } catch (error) {
+      console.error('Failed to create category:', error);
+      throw error;
     }
-    throw error;
   };
 
   const updateCategory = async (id: string, categoryData: { name: string; slug: string; description?: string }) => {
-    const { data, error } = await supabase
-      .from('categories')
-      .update(categoryData)
-      .eq('id', id)
-      .select()
-      .single();
+    try {
+      console.log('Updating category:', id, categoryData);
+      const { data, error } = await supabase
+        .from('categories')
+        .update(categoryData)
+        .eq('id', id)
+        .select()
+        .single();
 
-    if (!error && data) {
-      setCategories(categories.map(cat => cat.id === id ? data : cat));
-      return data;
+      if (error) {
+        console.error('Error updating category:', error);
+        throw error;
+      }
+
+      if (data) {
+        setCategories(categories.map(cat => cat.id === id ? data : cat));
+        return data;
+      }
+    } catch (error) {
+      console.error('Failed to update category:', error);
+      throw error;
     }
-    throw error;
   };
 
   const deleteCategory = async (id: string) => {
-    const { error } = await supabase
-      .from('categories')
-      .delete()
-      .eq('id', id);
+    try {
+      console.log('Deleting category:', id);
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', id);
 
-    if (!error) {
+      if (error) {
+        console.error('Error deleting category:', error);
+        throw error;
+      }
+
       setCategories(categories.filter(cat => cat.id !== id));
-    } else {
+    } catch (error) {
+      console.error('Failed to delete category:', error);
       throw error;
     }
   };
