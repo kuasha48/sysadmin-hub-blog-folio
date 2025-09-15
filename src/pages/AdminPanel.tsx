@@ -300,19 +300,20 @@ const AdminPanel = () => {
       console.log('Saving post with data:', postData);
 
       if (editingPost) {
-        // Use service role endpoint for updates to bypass RLS
-        const response = await fetch(`https://cnuphfizhokzywhsvbln.supabase.co/functions/v1/manage-blog-post/${editingPost.id}`, {
+        // Use edge function to update the blog post
+        const response = await supabase.functions.invoke('manage-blog-post', {
           method: 'PUT',
           headers: {
             'X-Admin-Session': 'admin-authenticated',
-            'Content-Type': 'application/json'
           },
-          body: JSON.stringify(postData)
+          body: {
+            postId: editingPost.id,
+            ...postData
+          }
         });
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Update failed: ${response.status}`);
+        if (response.error) {
+          throw new Error(response.error.message || 'Update failed');
         }
         
         toast({

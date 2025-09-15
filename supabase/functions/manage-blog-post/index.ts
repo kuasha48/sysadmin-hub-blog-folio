@@ -48,7 +48,18 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const pathParts = url.pathname.split('/');
-    const postId = pathParts[pathParts.length - 1]; // Get the ID from the URL
+    let postId = pathParts[pathParts.length - 1]; // Get the ID from the URL
+    let requestBody = null;
+    
+    // If we need the request body, read it once
+    if (req.method === 'PUT' || req.method === 'DELETE') {
+      requestBody = await req.json();
+      
+      // If postId is not in URL, try to get it from the request body
+      if (!postId || postId === 'manage-blog-post') {
+        postId = requestBody.postId;
+      }
+    }
 
     if (!postId || postId === 'manage-blog-post') {
       return new Response(
@@ -64,7 +75,8 @@ serve(async (req) => {
 
     if (req.method === 'PUT') {
       // Update blog post
-      const body = await req.json();
+      const body = { ...requestBody };
+      delete body.postId; // Remove postId from update data
       console.log(`Updating blog post ${postId} with data:`, body);
 
       const { data, error } = await supabase
