@@ -300,20 +300,23 @@ const AdminPanel = () => {
       console.log('Saving post with data:', postData);
 
       if (editingPost) {
-        // Use edge function to update the blog post
-        const response = await supabase.functions.invoke('manage-blog-post', {
+        // Use direct fetch to edge function with proper URL structure
+        const response = await fetch(`https://cnuphfizhokzywhsvbln.supabase.co/functions/v1/manage-blog-post`, {
           method: 'PUT',
           headers: {
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNudXBoZml6aG9renl3aHN2YmxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2NzczMjMsImV4cCI6MjA2NjI1MzMyM30.n_Ocmi-7727YQZNTrOI4fCNrg6wjF90F4e8HLceAacY`,
             'X-Admin-Session': 'admin-authenticated',
+            'Content-Type': 'application/json'
           },
-          body: {
+          body: JSON.stringify({
             postId: editingPost.id,
             ...postData
-          }
+          })
         });
 
-        if (response.error) {
-          throw new Error(response.error.message || 'Update failed');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Update failed: ${response.status}`);
         }
         
         toast({
