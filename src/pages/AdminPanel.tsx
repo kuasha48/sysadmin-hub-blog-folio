@@ -85,6 +85,7 @@ const AdminPanel = () => {
     tags: '',
     status: 'draft',
     thumbnail_url: '',
+    youtube_url: '',
     is_featured: false
   });
 
@@ -98,6 +99,7 @@ const AdminPanel = () => {
       tags: '',
       status: 'draft',
       thumbnail_url: '',
+      youtube_url: '',
       is_featured: false
     });
     setThumbnailFile(null);
@@ -263,6 +265,34 @@ const AdminPanel = () => {
     }
   };
 
+  // Helpers to optionally embed a YouTube video into the post content
+  const toYouTubeEmbed = (url: string): string => {
+    try {
+      const u = new URL(url.trim());
+      if (u.hostname.includes('youtu.be')) {
+        const id = u.pathname.replace('/', '');
+        return id ? `https://www.youtube.com/embed/${id}` : '';
+      }
+      if (u.hostname.includes('youtube.com')) {
+        if (u.pathname.startsWith('/embed/')) return `https://www.youtube.com${u.pathname}`;
+        const id = u.searchParams.get('v');
+        return id ? `https://www.youtube.com/embed/${id}` : '';
+      }
+      return '';
+    } catch {
+      return '';
+    }
+  };
+
+  const maybeAddVideoEmbed = (content: string, url?: string): string => {
+    if (!url) return content;
+    const embed = toYouTubeEmbed(url);
+    if (!embed) return content;
+    if (content.includes(embed)) return content;
+    const iframe = `<div class="ql-video-wrapper"><iframe src="${embed}" width="100%" height="400" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><p><br></p>`;
+    return `${iframe}${content}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -282,11 +312,13 @@ const AdminPanel = () => {
         thumbnailUrl = await uploadThumbnail(thumbnailFile);
       }
 
+      const contentWithVideo = maybeAddVideoEmbed(formData.content, (formData as any).youtube_url);
+
       const postData = {
         title: formData.title,
         slug: formData.slug || generateSlug(formData.title),
         excerpt: formData.excerpt,
-        content: formData.content,
+        content: contentWithVideo,
         category: formData.category,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : [],
         status: formData.status,
@@ -424,6 +456,7 @@ const AdminPanel = () => {
       tags: Array.isArray(post.tags) ? post.tags.join(', ') : post.tags || '',
       status: post.status,
       thumbnail_url: post.thumbnail_url || '',
+      youtube_url: '',
       is_featured: post.is_featured || false
     });
     setThumbnailFile(null);
@@ -551,6 +584,14 @@ const AdminPanel = () => {
                   </div>
 
                   <div>
+                    <Label htmlFor="youtube" className="text-gray-700">YouTube URL (optional)</Label>
+                    <Input
+                      id="youtube"
+                      value={(formData as any).youtube_url || ''}
+                      onChange={(e) => setFormData({ ...formData, youtube_url: e.target.value })}
+                      placeholder="https://www.youtube.com/watch?v=VIDEO_ID or https://youtu.be/VIDEO_ID"
+                      className="bg-white border-gray-300 mb-4"
+                    />
                     <Label htmlFor="content" className="text-gray-700">Content</Label>
                     <RichTextEditor
                       value={formData.content}
