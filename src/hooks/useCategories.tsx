@@ -43,22 +43,24 @@ export const useCategories = () => {
 
   const createCategory = async (categoryData: { name: string; slug: string; description?: string }) => {
     try {
-      console.log('Creating category:', categoryData);
-      const { data, error } = await supabase
-        .from('categories')
-        .insert([categoryData])
-        .select()
-        .single();
+      const session = localStorage.getItem('admin_session');
+      const res = await fetch('https://cnuphfizhokzywhsvbln.supabase.co/functions/v1/manage-categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Session': session || ''
+        },
+        body: JSON.stringify({ action: 'create', category: categoryData })
+      });
 
-      if (error) {
-        console.error('Error creating category:', error);
-        throw error;
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || 'Failed to create category');
       }
 
-      if (data) {
-        setCategories([...categories, data]);
-        return data;
-      }
+      const created = json.category as Category;
+      setCategories([...categories, created]);
+      return created;
     } catch (error) {
       console.error('Failed to create category:', error);
       throw error;
@@ -67,23 +69,25 @@ export const useCategories = () => {
 
   const updateCategory = async (id: string, categoryData: { name: string; slug: string; description?: string }) => {
     try {
-      console.log('Updating category:', id, categoryData);
-      const { data, error } = await supabase
-        .from('categories')
-        .update(categoryData)
-        .eq('id', id)
-        .select()
-        .single();
+      if (!id) throw new Error('Category id is required');
+      const session = localStorage.getItem('admin_session');
+      const res = await fetch('https://cnuphfizhokzywhsvbln.supabase.co/functions/v1/manage-categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Session': session || ''
+        },
+        body: JSON.stringify({ action: 'update', id, updates: categoryData })
+      });
 
-      if (error) {
-        console.error('Error updating category:', error);
-        throw error;
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || 'Failed to update category');
       }
 
-      if (data) {
-        setCategories(categories.map(cat => cat.id === id ? data : cat));
-        return data;
-      }
+      const updated = json.category as Category;
+      setCategories(categories.map(cat => cat.id === id ? updated : cat));
+      return updated;
     } catch (error) {
       console.error('Failed to update category:', error);
       throw error;
@@ -92,15 +96,20 @@ export const useCategories = () => {
 
   const deleteCategory = async (id: string) => {
     try {
-      console.log('Deleting category:', id);
-      const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', id);
+      if (!id) throw new Error('Category id is required');
+      const session = localStorage.getItem('admin_session');
+      const res = await fetch('https://cnuphfizhokzywhsvbln.supabase.co/functions/v1/manage-categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Session': session || ''
+        },
+        body: JSON.stringify({ action: 'delete', id })
+      });
 
-      if (error) {
-        console.error('Error deleting category:', error);
-        throw error;
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || 'Failed to delete category');
       }
 
       setCategories(categories.filter(cat => cat.id !== id));

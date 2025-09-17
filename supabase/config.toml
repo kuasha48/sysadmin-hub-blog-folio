@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.manage-contacts]
 verify_jwt = false
+
+[functions.manage-categories]
+verify_jwt = false
