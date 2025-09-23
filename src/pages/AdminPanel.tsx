@@ -16,6 +16,7 @@ import ContentEditor from '@/components/ContentEditor';
 import SEOEditor from '@/components/SEOEditor';
 import SiteSettingsEditor from '@/components/SiteSettingsEditor';
 import AnalyticsSettings from '@/components/AnalyticsSettings';
+import AdminProfile from '@/components/AdminProfile';
 import RichTextEditor from '@/components/RichTextEditor';
 import CategoryManager from '@/components/CategoryManager';
 import { useCategories } from '@/hooks/useCategories';
@@ -748,6 +749,13 @@ const AdminPanel = () => {
               Analytics & Chat
             </Button>
             <Button
+              variant={activeTab === 'profile' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('profile')}
+            >
+              <User className="h-4 w-4 mr-2" />
+              Profile
+            </Button>
+            <Button
               variant={activeTab === 'settings' ? 'default' : 'outline'}
               onClick={() => setActiveTab('settings')}
             >
@@ -917,6 +925,12 @@ const AdminPanel = () => {
             </Card>
           </div>
         )}
+
+        {/* Analytics & Chat Settings */}
+        {activeTab === 'analytics' && <AnalyticsSettings />}
+
+        {/* Admin Profile */}
+        {activeTab === 'profile' && <AdminProfile />}
 
         {/* Site Settings */}
         {activeTab === 'settings' && <SiteSettingsEditor />}
