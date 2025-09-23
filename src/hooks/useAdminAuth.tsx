@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import emailjs from '@emailjs/browser';
+import { hashPassword, verifyPassword, isPasswordHashed } from '@/lib/crypto';
 
 interface AdminCredentials {
   username: string;
@@ -14,10 +15,11 @@ interface AdminAuthContextType {
   loading: boolean;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
-  updateCredentials: (credentials: Partial<AdminCredentials>) => void;
+  updateCredentials: (credentials: Partial<AdminCredentials>) => Promise<void>;
   sendPasswordReset: (email: string) => Promise<boolean>;
   resetPassword: (token: string, newPassword: string) => Promise<boolean>;
-  getCredentials: () => AdminCredentials | null;
+  getCredentials: () => Promise<AdminCredentials | null>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
@@ -43,26 +45,40 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false);
   }, []);
 
-  const getCredentials = (): AdminCredentials | null => {
+  const getCredentials = async (): Promise<AdminCredentials | null> => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) {
-      // Set default credentials if none exist
+      // Set default credentials if none exist - hash the default password
+      const hashedPassword = await hashPassword('admin123');
       const defaultCredentials: AdminCredentials = {
         username: 'admin',
-        password: 'admin123', // In real app, this should be hashed
+        password: hashedPassword,
         email: 'cloudyskybd48@gmail.com'
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultCredentials));
       return defaultCredentials;
     }
-    return JSON.parse(stored);
+    
+    const credentials = JSON.parse(stored);
+    
+    // Migration: If password is not hashed, hash it
+    if (credentials.password && !isPasswordHashed(credentials.password)) {
+      console.log('Migrating plain text password to hashed password...');
+      const hashedPassword = await hashPassword(credentials.password);
+      credentials.password = hashedPassword;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(credentials));
+    }
+    
+    return credentials;
   };
 
   const login = async (username: string, password: string): Promise<boolean> => {
-    const credentials = getCredentials();
+    const credentials = await getCredentials();
     if (!credentials) return false;
 
-    if (credentials.username === username && credentials.password === password) {
+    const isValidPassword = await verifyPassword(password, credentials.password);
+    
+    if (credentials.username === username && isValidPassword) {
       // Create session that expires in 24 hours
       const session = {
         authenticated: true,
@@ -80,16 +96,33 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthenticated(false);
   };
 
-  const updateCredentials = (newCredentials: Partial<AdminCredentials>) => {
-    const current = getCredentials();
+  const updateCredentials = async (newCredentials: Partial<AdminCredentials>) => {
+    const current = await getCredentials();
     if (current) {
+      // If password is being updated, hash it
       const updated = { ...current, ...newCredentials };
+      if (newCredentials.password && !isPasswordHashed(newCredentials.password)) {
+        updated.password = await hashPassword(newCredentials.password);
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     }
   };
 
+  const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    const credentials = await getCredentials();
+    if (!credentials) return false;
+
+    const isCurrentPasswordValid = await verifyPassword(currentPassword, credentials.password);
+    if (!isCurrentPasswordValid) {
+      return false;
+    }
+
+    await updateCredentials({ password: newPassword });
+    return true;
+  };
+
   const sendPasswordReset = async (email: string): Promise<boolean> => {
-    const credentials = getCredentials();
+    const credentials = await getCredentials();
     if (!credentials || credentials.email !== email) {
       return false;
     }
@@ -120,13 +153,13 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resetPassword = async (token: string, newPassword: string): Promise<boolean> => {
-    const credentials = getCredentials();
+    const credentials = await getCredentials();
     if (!credentials || !credentials.resetToken || !credentials.resetTokenExpiry) {
       return false;
     }
 
     if (credentials.resetToken === token && credentials.resetTokenExpiry > Date.now()) {
-      updateCredentials({ 
+      await updateCredentials({ 
         password: newPassword, 
         resetToken: undefined, 
         resetTokenExpiry: undefined 
@@ -145,7 +178,8 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
       updateCredentials,
       sendPasswordReset,
       resetPassword,
-      getCredentials
+      getCredentials,
+      changePassword
     }}>
       {children}
     </AdminAuthContext.Provider>
