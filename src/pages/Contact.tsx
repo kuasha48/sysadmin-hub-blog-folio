@@ -28,21 +28,31 @@ const Contact = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase
-      .from('contact_submissions')
-      .insert([formData]);
+    try {
+      // Save to database
+      const { error: dbError } = await supabase
+        .from('contact_submissions')
+        .insert([formData]);
 
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
+      if (dbError) {
+        throw dbError;
+      }
+
+      // Send email notification
+      const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
+        body: formData
       });
-    } else {
+
+      if (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Don't fail the whole process if email fails, but log it
+      }
+
       toast({
         title: "Success",
         description: "Your message has been sent successfully! We'll get back to you soon.",
       });
+      
       setFormData({
         name: '',
         email: '',
@@ -50,7 +60,15 @@ const Contact = () => {
         country: '',
         message: ''
       });
+    } catch (error) {
+      console.error('Contact form error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
     }
+    
     setLoading(false);
   };
 
