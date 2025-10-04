@@ -176,20 +176,20 @@ export const useSEO = (pageType?: string, pageSlug?: string) => {
       title,
       description,
       keywords: seoData?.keywords || '',
-      canonical: seoData?.canonical_url || '',
+      canonical: seoData?.canonical_url || siteUrl || 'https://azimstech.com',
       robots: `${seoData?.robots_index !== false ? 'index' : 'noindex'}, ${seoData?.robots_follow !== false ? 'follow' : 'nofollow'}`,
       og: {
         title: ogTitle,
         description: ogDescription,
-        image: ogImage,
+        image: ogImage || 'https://cnuphfizhokzywhsvbln.supabase.co/storage/v1/object/public/profile-images/azimstech-logo.png',
         type: ogType,
-        url: siteUrl
+        url: siteUrl || 'https://azimstech.com'
       },
       twitter: {
         card: seoData?.twitter_card || 'summary_large_image',
         title: seoData?.twitter_title || ogTitle,
         description: seoData?.twitter_description || ogDescription,
-        image: seoData?.twitter_image || ogImage
+        image: seoData?.twitter_image || ogImage || 'https://cnuphfizhokzywhsvbln.supabase.co/storage/v1/object/public/profile-images/azimstech-logo.png'
       },
       jsonLd: seoData?.json_ld
     };
