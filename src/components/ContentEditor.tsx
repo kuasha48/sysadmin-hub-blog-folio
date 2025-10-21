@@ -63,6 +63,8 @@ const ContentEditor = () => {
   const [editingTitle, setEditingTitle] = useState('');
   const [editingStatsEntry, setEditingStatsEntry] = useState<string | null>(null);
   const [editingSkillsEntry, setEditingSkillsEntry] = useState<string | null>(null);
+  const [editingStatsData, setEditingStatsData] = useState<Record<string, any>>({});
+  const [editingSkillsData, setEditingSkillsData] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -274,7 +276,6 @@ const ContentEditor = () => {
         title: "Success",
         description: "Stats entry updated successfully!",
       });
-      setEditingStatsEntry(null);
       fetchStatsEntries();
     }
     setLoading(false);
@@ -298,8 +299,73 @@ const ContentEditor = () => {
         title: "Success",
         description: "Skills entry updated successfully!",
       });
-      setEditingSkillsEntry(null);
       fetchSkillsEntries();
+    }
+    setLoading(false);
+  };
+
+  const handleDoneSkillsEntry = () => {
+    setEditingSkillsEntry(null);
+    setEditingSkillsData({});
+  };
+
+  const handleDoneStatsEntry = () => {
+    setEditingStatsEntry(null);
+    setEditingStatsData({});
+  };
+
+  const handleUpdateContent = async (sectionKey: string, content: string, title: string) => {
+    setLoading(true);
+    const section = contentSections.find(s => s.section_key === sectionKey);
+    
+    if (section) {
+      // Update existing section
+      const { error } = await supabase
+        .from('content_sections')
+        .update({
+          content: content || section.content,
+          title: title || section.title,
+          updated_at: new Date().toISOString()
+        })
+        .eq('section_key', sectionKey);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to update content",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Content updated successfully!",
+        });
+        fetchContentSections();
+      }
+    } else {
+      // Create new section
+      const { error } = await supabase
+        .from('content_sections')
+        .insert({
+          section_key: sectionKey,
+          content: content,
+          title: title,
+          section_type: 'text'
+        });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to create content",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Content created successfully!",
+        });
+        fetchContentSections();
+      }
     }
     setLoading(false);
   };
@@ -308,11 +374,13 @@ const ContentEditor = () => {
   const footerSections = contentSections.filter(s => s.section_key.includes('footer'));
   const skillsSections = contentSections.filter(s => s.section_key.includes('skills'));
   const statsSections = contentSections.filter(s => s.section_key.includes('stats'));
+  const ctaSections = contentSections.filter(s => s.section_key.includes('cta'));
   const otherSections = contentSections.filter(s => 
     !s.section_key.includes('hero') && 
     !s.section_key.includes('footer') && 
     !s.section_key.includes('skills') &&
-    !s.section_key.includes('stats')
+    !s.section_key.includes('stats') &&
+    !s.section_key.includes('cta')
   );
 
   return (
@@ -639,7 +707,7 @@ const ContentEditor = () => {
                             <Input
                               id={`number-${entry.id}`}
                               defaultValue={entry.number}
-                              onBlur={(e) => handleSaveStatsEntry({ id: entry.id, number: e.target.value })}
+                              onChange={(e) => setEditingStatsData({...editingStatsData, number: e.target.value})}
                             />
                           </div>
                           <div>
@@ -648,7 +716,7 @@ const ContentEditor = () => {
                               id={`icon-${entry.id}`}
                               defaultValue={entry.icon_name}
                               placeholder="Shield, Server, Users, Award, etc."
-                              onBlur={(e) => handleSaveStatsEntry({ id: entry.id, icon_name: e.target.value })}
+                              onChange={(e) => setEditingStatsData({...editingStatsData, icon_name: e.target.value})}
                             />
                           </div>
                         </div>
@@ -658,7 +726,7 @@ const ContentEditor = () => {
                             <Input
                               id={`label-${entry.id}`}
                               defaultValue={entry.label}
-                              onBlur={(e) => handleSaveStatsEntry({ id: entry.id, label: e.target.value })}
+                              onChange={(e) => setEditingStatsData({...editingStatsData, label: e.target.value})}
                             />
                           </div>
                           <div>
@@ -667,7 +735,7 @@ const ContentEditor = () => {
                               id={`color-${entry.id}`}
                               defaultValue={entry.color_class}
                               placeholder="text-blue-500, text-green-500, etc."
-                              onBlur={(e) => handleSaveStatsEntry({ id: entry.id, color_class: e.target.value })}
+                              onChange={(e) => setEditingStatsData({...editingStatsData, color_class: e.target.value})}
                             />
                           </div>
                         </div>
@@ -676,15 +744,29 @@ const ContentEditor = () => {
                           <Input
                             id={`description-${entry.id}`}
                             defaultValue={entry.description}
-                            onBlur={(e) => handleSaveStatsEntry({ id: entry.id, description: e.target.value })}
+                            onChange={(e) => setEditingStatsData({...editingStatsData, description: e.target.value})}
                           />
                         </div>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setEditingStatsEntry(null)}
-                        >
-                          Done
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Button 
+                            onClick={async () => {
+                              if (Object.keys(editingStatsData).length > 0) {
+                                await handleSaveStatsEntry({ id: entry.id, ...editingStatsData });
+                              }
+                              handleDoneStatsEntry();
+                            }}
+                            disabled={loading}
+                          >
+                            <Save className="h-4 w-4 mr-2" />
+                            Save & Done
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={handleDoneStatsEntry}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
                       </div>
                     ) : (
                       <div className="text-sm text-gray-600">
@@ -734,7 +816,7 @@ const ContentEditor = () => {
                             <Input
                               id={`skills-title-${entry.id}`}
                               defaultValue={entry.title}
-                              onBlur={(e) => handleSaveSkillsEntry({ id: entry.id, title: e.target.value })}
+                              onChange={(e) => setEditingSkillsData({...editingSkillsData, title: e.target.value})}
                             />
                           </div>
                           <div>
@@ -743,7 +825,7 @@ const ContentEditor = () => {
                               id={`skills-icon-${entry.id}`}
                               defaultValue={entry.icon_name}
                               placeholder="Server, Shield, Code, Database, etc."
-                              onBlur={(e) => handleSaveSkillsEntry({ id: entry.id, icon_name: e.target.value })}
+                              onChange={(e) => setEditingSkillsData({...editingSkillsData, icon_name: e.target.value})}
                             />
                           </div>
                         </div>
@@ -753,7 +835,7 @@ const ContentEditor = () => {
                             id={`skills-color-${entry.id}`}
                             defaultValue={entry.color_class}
                             placeholder="text-blue-400, text-red-400, etc."
-                            onBlur={(e) => handleSaveSkillsEntry({ id: entry.id, color_class: e.target.value })}
+                            onChange={(e) => setEditingSkillsData({...editingSkillsData, color_class: e.target.value})}
                           />
                         </div>
                         <div>
@@ -762,18 +844,32 @@ const ContentEditor = () => {
                             id={`skills-list-${entry.id}`}
                             defaultValue={entry.skills.join(', ')}
                             placeholder="Skill 1, Skill 2, Skill 3"
-                            onBlur={(e) => {
+                            onChange={(e) => {
                               const skillsArray = e.target.value.split(',').map(s => s.trim()).filter(s => s);
-                              handleSaveSkillsEntry({ id: entry.id, skills: skillsArray });
+                              setEditingSkillsData({...editingSkillsData, skills: skillsArray});
                             }}
                           />
                         </div>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setEditingSkillsEntry(null)}
-                        >
-                          Done
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Button 
+                            onClick={async () => {
+                              if (Object.keys(editingSkillsData).length > 0) {
+                                await handleSaveSkillsEntry({ id: entry.id, ...editingSkillsData });
+                              }
+                              handleDoneSkillsEntry();
+                            }}
+                            disabled={loading}
+                          >
+                            <Save className="h-4 w-4 mr-2" />
+                            Save & Done
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={handleDoneSkillsEntry}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
                       </div>
                     ) : (
                       <div className="text-sm text-gray-600">
@@ -785,6 +881,39 @@ const ContentEditor = () => {
                     )}
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* CTA Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Hire/Contact CTA Section</CardTitle>
+              <CardDescription>Edit the call-to-action section displayed after blog posts</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="cta-title">Title</Label>
+                  <Input
+                    id="cta-title"
+                    defaultValue={ctaSections.find(s => s.section_key === 'cta_hire')?.title}
+                    placeholder="Want to hire for short term or long term project please contact"
+                    onBlur={(e) => handleUpdateContent('cta_hire', '', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="cta-whatsapp">WhatsApp Number</Label>
+                  <Input
+                    id="cta-whatsapp"
+                    defaultValue={ctaSections.find(s => s.section_key === 'cta_whatsapp')?.content}
+                    placeholder="+38345677497"
+                    onBlur={(e) => handleUpdateContent('cta_whatsapp', e.target.value, '')}
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Include country code (e.g., +38345677497)
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>

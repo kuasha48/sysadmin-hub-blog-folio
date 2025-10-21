@@ -5,6 +5,7 @@ import Hero from '@/components/Hero';
 import StatsSection from '@/components/StatsSection';
 import SkillsSection from '@/components/SkillsSection';
 import FeaturedBlog from '@/components/FeaturedBlog';
+import CTASection from '@/components/CTASection';
 import Footer from '@/components/Footer';
 import SEOHead from '@/components/SEOHead';
 
@@ -22,6 +23,7 @@ const Index = () => {
       <StatsSection />
       <SkillsSection />
       <FeaturedBlog />
+      <CTASection />
       <Footer />
     </div>
   );
