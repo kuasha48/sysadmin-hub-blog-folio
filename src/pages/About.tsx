@@ -1,14 +1,17 @@
 
 import React from 'react';
 import { Calendar, MapPin, Award } from 'lucide-react';
-import { useContent, useContactInfo } from '@/hooks/useContent';
+import { useContent, useContactInfo, useWorkExperiences, useCertifications } from '@/hooks/useContent';
 import SEOHead from '@/components/SEOHead';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const About = () => {
   const { content: introContent } = useContent('about_intro');
   const { contactInfo } = useContactInfo();
+  const { workExperiences, loading: experiencesLoading } = useWorkExperiences();
+  const { certifications, loading: certificationsLoading } = useCertifications();
 
-  const experiences = [
+  const experiences = workExperiences.length > 0 ? workExperiences : [
     {
       title: 'System Administrator (On-site)',
       company: 'SPINP Tech – Prishtina, Kosovo',
@@ -79,12 +82,12 @@ const About = () => {
     }
   ];
 
-  const certifications = [
-    'AWS Certified Solutions Architect',
-    'Red Hat Certified System Administrator',
-    'CompTIA Security+',
-    'Microsoft Certified: Azure Administrator',
-    'Certified Kubernetes Administrator'
+  const certList = certifications.length > 0 ? certifications : [
+    { id: '1', name: 'AWS Certified Solutions Architect', issuer: null, issue_date: null, credential_id: null, credential_url: null, sort_order: 1 },
+    { id: '2', name: 'Red Hat Certified System Administrator', issuer: null, issue_date: null, credential_id: null, credential_url: null, sort_order: 2 },
+    { id: '3', name: 'CompTIA Security+', issuer: null, issue_date: null, credential_id: null, credential_url: null, sort_order: 3 },
+    { id: '4', name: 'Microsoft Certified: Azure Administrator', issuer: null, issue_date: null, credential_id: null, credential_url: null, sort_order: 4 },
+    { id: '5', name: 'Certified Kubernetes Administrator', issuer: null, issue_date: null, credential_id: null, credential_url: null, sort_order: 5 }
   ];
 
   return (
@@ -126,8 +129,19 @@ const About = () => {
         {/* Experience Section */}
         <div className="bg-white rounded-lg shadow-lg p-8 mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Work Experience</h2>
-          <div className="space-y-8">
-            {experiences.map((exp, index) => (
+          {experiencesLoading ? (
+            <div className="space-y-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="border-l-4 border-green-400 pl-6">
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2 mb-4" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {experiences.map((exp, index) => (
               <div key={index} className="border-l-4 border-green-400 pl-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
                   <h3 className="text-xl font-semibold text-gray-900">{exp.title}</h3>
@@ -144,21 +158,34 @@ const About = () => {
                   ))}
                 </ul>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Certifications Section */}
         <div className="bg-white rounded-lg shadow-lg p-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Certifications</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {certifications.map((cert, index) => (
-              <div key={index} className="flex items-center p-4 bg-gray-50 rounded-lg">
-                <Award className="h-6 w-6 text-green-500 mr-3" />
-                <span className="text-gray-800 font-medium">{cert}</span>
-              </div>
-            ))}
-          </div>
+          {certificationsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {certList.map((cert) => (
+                <div key={cert.id} className="flex items-start p-4 bg-gray-50 rounded-lg">
+                  <Award className="h-6 w-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <span className="text-gray-800 font-medium block">{cert.name}</span>
+                    {cert.issuer && <span className="text-sm text-gray-600 block">{cert.issuer}</span>}
+                    {cert.issue_date && <span className="text-xs text-gray-500">{cert.issue_date}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

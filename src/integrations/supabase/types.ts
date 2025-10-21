@@ -92,6 +92,42 @@ export type Database = {
         }
         Relationships: []
       }
+      certifications: {
+        Row: {
+          created_at: string
+          credential_id: string | null
+          credential_url: string | null
+          id: string
+          issue_date: string | null
+          issuer: string | null
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credential_id?: string | null
+          credential_url?: string | null
+          id?: string
+          issue_date?: string | null
+          issuer?: string | null
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credential_id?: string | null
+          credential_url?: string | null
+          id?: string
+          issue_date?: string | null
+          issuer?: string | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_info: {
         Row: {
           address: string | null
@@ -397,6 +433,42 @@ export type Database = {
           label?: string
           number?: string
           sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      work_experiences: {
+        Row: {
+          achievements: string[]
+          company: string
+          created_at: string
+          description: string | null
+          id: string
+          period: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          achievements?: string[]
+          company: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          period: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          achievements?: string[]
+          company?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          period?: string
+          sort_order?: number
+          title?: string
           updated_at?: string
         }
         Relationships: []

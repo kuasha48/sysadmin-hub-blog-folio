@@ -6,9 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Save, Edit, Settings, User, Home, Share2 } from 'lucide-react';
+import { Save, Edit, Settings, User, Home, Share2, Briefcase } from 'lucide-react';
 import RichTextEditor from './RichTextEditor';
 import ProfileUpload from './ProfileUpload';
+import WorkExperienceManager from './WorkExperienceManager';
+import CertificationManager from './CertificationManager';
 
 interface ContentSection {
   id: string;
@@ -386,7 +388,7 @@ const ContentEditor = () => {
   return (
     <div className="space-y-8">
       <Tabs defaultValue="homepage" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="homepage" className="flex items-center gap-2">
             <Home className="h-4 w-4" />
             Homepage
@@ -394,6 +396,10 @@ const ContentEditor = () => {
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             Profile Images
+          </TabsTrigger>
+          <TabsTrigger value="about" className="flex items-center gap-2">
+            <Briefcase className="h-4 w-4" />
+            About Page
           </TabsTrigger>
           <TabsTrigger value="contact" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -1004,6 +1010,11 @@ const ContentEditor = () => {
               onUploadComplete={fetchContentSections}
             />
           </div>
+        </TabsContent>
+
+        <TabsContent value="about" className="space-y-6">
+          <WorkExperienceManager />
+          <CertificationManager />
         </TabsContent>
 
         <TabsContent value="contact" className="space-y-6">

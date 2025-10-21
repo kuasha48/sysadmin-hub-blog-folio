@@ -175,3 +175,91 @@ export const useSkillsEntries = () => {
 
   return { skillsEntries, loading, refetch: fetchSkillsEntries };
 };
+
+interface WorkExperience {
+  id: string;
+  title: string;
+  company: string;
+  period: string;
+  description: string;
+  achievements: string[];
+  sort_order: number;
+}
+
+export const useWorkExperiences = () => {
+  const [workExperiences, setWorkExperiences] = useState<WorkExperience[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchWorkExperiences();
+  }, []);
+
+  const fetchWorkExperiences = async () => {
+    setLoading(true);
+    try {
+      console.log('Fetching work experiences...');
+      const { data, error } = await supabase
+        .from('work_experiences')
+        .select('*')
+        .order('sort_order');
+
+      console.log('Work experiences fetch result:', { data, error, count: data?.length });
+      
+      if (!error && data) {
+        setWorkExperiences(data);
+      } else {
+        setWorkExperiences([]);
+      }
+    } catch (err) {
+      console.error('Work experiences fetch error:', err);
+      setWorkExperiences([]);
+    }
+    setLoading(false);
+  };
+
+  return { workExperiences, loading, refetch: fetchWorkExperiences };
+};
+
+interface Certification {
+  id: string;
+  name: string;
+  issuer: string | null;
+  issue_date: string | null;
+  credential_id: string | null;
+  credential_url: string | null;
+  sort_order: number;
+}
+
+export const useCertifications = () => {
+  const [certifications, setCertifications] = useState<Certification[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCertifications();
+  }, []);
+
+  const fetchCertifications = async () => {
+    setLoading(true);
+    try {
+      console.log('Fetching certifications...');
+      const { data, error } = await supabase
+        .from('certifications')
+        .select('*')
+        .order('sort_order');
+
+      console.log('Certifications fetch result:', { data, error, count: data?.length });
+      
+      if (!error && data) {
+        setCertifications(data);
+      } else {
+        setCertifications([]);
+      }
+    } catch (err) {
+      console.error('Certifications fetch error:', err);
+      setCertifications([]);
+    }
+    setLoading(false);
+  };
+
+  return { certifications, loading, refetch: fetchCertifications };
+};
