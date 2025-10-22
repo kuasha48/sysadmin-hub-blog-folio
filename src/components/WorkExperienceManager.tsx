@@ -40,12 +40,16 @@ const WorkExperienceManager = () => {
   };
 
   const handleSave = async (id: string) => {
+    // Exclude id from update - only send the fields that should be updated
+    const { id: _, ...updateData } = editingData as WorkExperience;
+    
     const { error } = await supabase
       .from('work_experiences')
-      .update(editingData)
+      .update(updateData)
       .eq('id', id);
 
     if (error) {
+      console.error('Update error:', error);
       toast({
         title: "Error",
         description: "Failed to update work experience",

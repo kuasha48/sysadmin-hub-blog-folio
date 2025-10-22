@@ -218,6 +218,42 @@ export type Database = {
         }
         Relationships: []
       }
+      ftp_settings: {
+        Row: {
+          backup_enabled: boolean
+          created_at: string
+          ftp_host: string
+          ftp_password: string
+          ftp_port: number
+          ftp_username: string
+          id: string
+          last_backup_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          backup_enabled?: boolean
+          created_at?: string
+          ftp_host: string
+          ftp_password: string
+          ftp_port?: number
+          ftp_username: string
+          id?: string
+          last_backup_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          backup_enabled?: boolean
+          created_at?: string
+          ftp_host?: string
+          ftp_password?: string
+          ftp_port?: number
+          ftp_username?: string
+          id?: string
+          last_backup_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null

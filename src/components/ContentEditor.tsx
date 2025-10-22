@@ -6,11 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Save, Edit, Settings, User, Home, Share2, Briefcase } from 'lucide-react';
+import { Save, Edit, Settings, User, Home, Share2, Briefcase, Database } from 'lucide-react';
 import RichTextEditor from './RichTextEditor';
 import ProfileUpload from './ProfileUpload';
 import WorkExperienceManager from './WorkExperienceManager';
 import CertificationManager from './CertificationManager';
+import FTPBackupSettings from './FTPBackupSettings';
 
 interface ContentSection {
   id: string;
@@ -388,7 +389,7 @@ const ContentEditor = () => {
   return (
     <div className="space-y-8">
       <Tabs defaultValue="homepage" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="homepage" className="flex items-center gap-2">
             <Home className="h-4 w-4" />
             Homepage
@@ -408,6 +409,10 @@ const ContentEditor = () => {
           <TabsTrigger value="social" className="flex items-center gap-2">
             <Share2 className="h-4 w-4" />
             Social Links
+          </TabsTrigger>
+          <TabsTrigger value="backup" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Backup
           </TabsTrigger>
         </TabsList>
 
@@ -903,23 +908,84 @@ const ContentEditor = () => {
                   <Label htmlFor="cta-title">Title</Label>
                   <Input
                     id="cta-title"
-                    defaultValue={ctaSections.find(s => s.section_key === 'cta_hire')?.title}
+                    value={ctaSections.find(s => s.section_key === 'cta_hire')?.title || ''}
+                    onChange={(e) => {
+                      const section = ctaSections.find(s => s.section_key === 'cta_hire');
+                      if (section) {
+                        const updated = contentSections.map(s => 
+                          s.section_key === 'cta_hire' ? { ...s, title: e.target.value } : s
+                        );
+                        setContentSections(updated);
+                      }
+                    }}
                     placeholder="Want to hire for short term or long term project please contact"
-                    onBlur={(e) => handleUpdateContent('cta_hire', '', e.target.value)}
                   />
                 </div>
                 <div>
                   <Label htmlFor="cta-whatsapp">WhatsApp Number</Label>
                   <Input
                     id="cta-whatsapp"
-                    defaultValue={ctaSections.find(s => s.section_key === 'cta_whatsapp')?.content}
+                    value={ctaSections.find(s => s.section_key === 'cta_whatsapp')?.content || ''}
+                    onChange={(e) => {
+                      const section = ctaSections.find(s => s.section_key === 'cta_whatsapp');
+                      if (section) {
+                        const updated = contentSections.map(s => 
+                          s.section_key === 'cta_whatsapp' ? { ...s, content: e.target.value } : s
+                        );
+                        setContentSections(updated);
+                      }
+                    }}
                     placeholder="+38345677497"
-                    onBlur={(e) => handleUpdateContent('cta_whatsapp', e.target.value, '')}
                   />
                   <p className="text-sm text-muted-foreground mt-1">
                     Include country code (e.g., +38345677497)
                   </p>
                 </div>
+                <Button 
+                  onClick={async () => {
+                    setLoading(true);
+                    const ctaTitle = ctaSections.find(s => s.section_key === 'cta_hire');
+                    const ctaWhatsapp = ctaSections.find(s => s.section_key === 'cta_whatsapp');
+                    
+                    const updates = [];
+                    if (ctaTitle) {
+                      updates.push(
+                        supabase.from('content_sections')
+                          .update({ title: ctaTitle.title })
+                          .eq('section_key', 'cta_hire')
+                      );
+                    }
+                    if (ctaWhatsapp) {
+                      updates.push(
+                        supabase.from('content_sections')
+                          .update({ content: ctaWhatsapp.content })
+                          .eq('section_key', 'cta_whatsapp')
+                      );
+                    }
+                    
+                    const results = await Promise.all(updates);
+                    const hasError = results.some(r => r.error);
+                    
+                    if (hasError) {
+                      toast({
+                        title: "Error",
+                        description: "Failed to update CTA section",
+                        variant: "destructive",
+                      });
+                    } else {
+                      toast({
+                        title: "Success",
+                        description: "CTA section updated successfully!",
+                      });
+                      fetchContentSections();
+                    }
+                    setLoading(false);
+                  }}
+                  disabled={loading}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save CTA Section
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -1099,6 +1165,10 @@ const ContentEditor = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="backup" className="space-y-6">
+          <FTPBackupSettings />
         </TabsContent>
       </Tabs>
     </div>
