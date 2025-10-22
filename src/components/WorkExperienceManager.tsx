@@ -43,16 +43,21 @@ const WorkExperienceManager = () => {
     // Exclude id from update - only send the fields that should be updated
     const { id: _, ...updateData } = editingData as WorkExperience;
     
-    const { error } = await supabase
+    console.log('Saving work experience:', { id, editingData, updateData });
+    
+    const { data, error } = await supabase
       .from('work_experiences')
       .update(updateData)
-      .eq('id', id);
+      .eq('id', id)
+      .select();
+
+    console.log('Work experience save result:', { data, error });
 
     if (error) {
       console.error('Update error:', error);
       toast({
         title: "Error",
-        description: "Failed to update work experience",
+        description: `Failed to update work experience: ${error.message}`,
         variant: "destructive",
       });
     } else {

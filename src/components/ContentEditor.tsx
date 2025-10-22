@@ -908,15 +908,11 @@ const ContentEditor = () => {
                   <Label htmlFor="cta-title">Title</Label>
                   <Input
                     id="cta-title"
-                    value={ctaSections.find(s => s.section_key === 'cta_hire')?.title || ''}
+                    value={contentSections.find(s => s.section_key === 'cta_hire')?.title || ''}
                     onChange={(e) => {
-                      const section = ctaSections.find(s => s.section_key === 'cta_hire');
-                      if (section) {
-                        const updated = contentSections.map(s => 
-                          s.section_key === 'cta_hire' ? { ...s, title: e.target.value } : s
-                        );
-                        setContentSections(updated);
-                      }
+                      setContentSections(prev => prev.map(s => 
+                        s.section_key === 'cta_hire' ? { ...s, title: e.target.value } : s
+                      ));
                     }}
                     placeholder="Want to hire for short term or long term project please contact"
                   />
@@ -925,15 +921,11 @@ const ContentEditor = () => {
                   <Label htmlFor="cta-whatsapp">WhatsApp Number</Label>
                   <Input
                     id="cta-whatsapp"
-                    value={ctaSections.find(s => s.section_key === 'cta_whatsapp')?.content || ''}
+                    value={contentSections.find(s => s.section_key === 'cta_whatsapp')?.content || ''}
                     onChange={(e) => {
-                      const section = ctaSections.find(s => s.section_key === 'cta_whatsapp');
-                      if (section) {
-                        const updated = contentSections.map(s => 
-                          s.section_key === 'cta_whatsapp' ? { ...s, content: e.target.value } : s
-                        );
-                        setContentSections(updated);
-                      }
+                      setContentSections(prev => prev.map(s => 
+                        s.section_key === 'cta_whatsapp' ? { ...s, content: e.target.value } : s
+                      ));
                     }}
                     placeholder="+38345677497"
                   />
@@ -944,14 +936,16 @@ const ContentEditor = () => {
                 <Button 
                   onClick={async () => {
                     setLoading(true);
-                    const ctaTitle = ctaSections.find(s => s.section_key === 'cta_hire');
-                    const ctaWhatsapp = ctaSections.find(s => s.section_key === 'cta_whatsapp');
+                    const ctaHire = contentSections.find(s => s.section_key === 'cta_hire');
+                    const ctaWhatsapp = contentSections.find(s => s.section_key === 'cta_whatsapp');
+                    
+                    console.log('Saving CTA sections:', { ctaHire, ctaWhatsapp });
                     
                     const updates = [];
-                    if (ctaTitle) {
+                    if (ctaHire) {
                       updates.push(
                         supabase.from('content_sections')
-                          .update({ title: ctaTitle.title })
+                          .update({ title: ctaHire.title })
                           .eq('section_key', 'cta_hire')
                       );
                     }
@@ -964,6 +958,7 @@ const ContentEditor = () => {
                     }
                     
                     const results = await Promise.all(updates);
+                    console.log('CTA save results:', results);
                     const hasError = results.some(r => r.error);
                     
                     if (hasError) {

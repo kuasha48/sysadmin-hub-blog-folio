@@ -34,15 +34,23 @@ const FTPBackupSettings = () => {
       const { data, error } = await supabase
         .from('ftp_settings')
         .select('*')
-        .maybeSingle();
+        .limit(1)
+        .single();
 
-      if (error) throw error;
-      if (data) setSettings(data);
-    } catch (err) {
+      if (error) {
+        console.error('Error fetching FTP settings:', error);
+        throw error;
+      }
+      
+      console.log('Fetched FTP settings:', data);
+      if (data) {
+        setSettings(data);
+      }
+    } catch (err: any) {
       console.error('Error fetching FTP settings:', err);
       toast({
         title: "Error",
-        description: "Failed to load FTP settings",
+        description: `Failed to load FTP settings: ${err.message || 'Unknown error'}`,
         variant: "destructive",
       });
     }
@@ -54,7 +62,9 @@ const FTPBackupSettings = () => {
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      console.log('Saving FTP settings:', settings);
+      
+      const { data, error } = await supabase
         .from('ftp_settings')
         .update({
           ftp_host: settings.ftp_host,
@@ -62,8 +72,12 @@ const FTPBackupSettings = () => {
           ftp_password: settings.ftp_password,
           ftp_port: settings.ftp_port,
           backup_enabled: settings.backup_enabled,
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', settings.id);
+        .eq('id', settings.id)
+        .select();
+
+      console.log('Save result:', { data, error });
 
       if (error) throw error;
 
@@ -72,11 +86,11 @@ const FTPBackupSettings = () => {
         description: "FTP settings saved successfully!",
       });
       fetchSettings();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving FTP settings:', err);
       toast({
         title: "Error",
-        description: "Failed to save FTP settings",
+        description: `Failed to save FTP settings: ${err.message || 'Unknown error'}`,
         variant: "destructive",
       });
     }
@@ -217,6 +231,10 @@ const FTPBackupSettings = () => {
             <Button onClick={handleSave} disabled={saving}>
               <Save className="h-4 w-4 mr-2" />
               {saving ? 'Saving...' : 'Save Settings'}
+            </Button>
+            <Button variant="secondary" onClick={() => fetchSettings()}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reload Settings
             </Button>
             <Button variant="outline" onClick={handleTestBackup}>
               <Database className="h-4 w-4 mr-2" />
