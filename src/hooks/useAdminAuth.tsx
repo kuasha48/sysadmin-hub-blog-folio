@@ -25,7 +25,7 @@ interface AdminAuthContextType {
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'admin_credentials';
-const CREDENTIALS_VERSION = 'v2'; // Bump this to force reset credentials
+const CREDENTIALS_VERSION = 'v3'; // Bump this to force reset credentials
 const SESSION_KEY = 'admin_session';
 
 export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
