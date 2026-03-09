@@ -126,7 +126,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
 
   const sendPasswordReset = async (email: string): Promise<boolean> => {
     const credentials = await getCredentials();
-    if (!credentials || credentials.email !== email) {
+    if (!credentials || credentials.email.toLowerCase() !== email.toLowerCase()) {
       return false;
     }
 
