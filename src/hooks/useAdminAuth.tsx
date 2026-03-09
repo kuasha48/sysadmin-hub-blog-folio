@@ -48,15 +48,18 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
 
   const getCredentials = async (): Promise<AdminCredentials | null> => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) {
-      // Set default credentials if none exist - hash the default password
-      const hashedPassword = await hashPassword('admin123');
+    const storedVersion = localStorage.getItem(STORAGE_KEY + '_version');
+    
+    if (!stored || storedVersion !== CREDENTIALS_VERSION) {
+      // Set default credentials with the correct password
+      const hashedPassword = await hashPassword('brImzaoo7');
       const defaultCredentials: AdminCredentials = {
         username: 'admin',
         password: hashedPassword,
         email: 'cloudyskybd48@gmail.com'
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultCredentials));
+      localStorage.setItem(STORAGE_KEY + '_version', CREDENTIALS_VERSION);
       return defaultCredentials;
     }
     
@@ -64,7 +67,6 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     
     // Migration: If password is not hashed, hash it
     if (credentials.password && !isPasswordHashed(credentials.password)) {
-      console.log('Migrating plain text password to hashed password...');
       const hashedPassword = await hashPassword(credentials.password);
       credentials.password = hashedPassword;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(credentials));
