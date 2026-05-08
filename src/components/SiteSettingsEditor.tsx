@@ -114,6 +114,13 @@ const SiteSettingsEditor = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className={`flex items-center gap-2 text-sm p-3 rounded-lg ${isEmailjsConfigured ? 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300' : 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300'}`}>
+            {isEmailjsConfigured ? <CheckCircle className="h-4 w-4 flex-shrink-0" /> : <AlertCircle className="h-4 w-4 flex-shrink-0" />}
+            {isEmailjsConfigured
+              ? "EmailJS is configured. Password reset emails will be sent."
+              : "EmailJS is not fully configured. Password reset links will only be shown in the browser console."}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="emailjs_service">Service ID</Label>
             <Input
@@ -131,6 +138,9 @@ const SiteSettingsEditor = () => {
               value={emailjsConfig.templateId}
               onChange={(e) => handleEmailjsUpdate('templateId', e.target.value)}
             />
+            <p className="text-xs text-muted-foreground">
+              Template must include variables: {"{{"}to_email{"}}"}, {"{{"}reset_link{"}}"}, {"{{"}to_name{"}}"}
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="emailjs_public">Public Key</Label>
@@ -141,6 +151,15 @@ const SiteSettingsEditor = () => {
               onChange={(e) => handleEmailjsUpdate('publicKey', e.target.value)}
             />
           </div>
+          <Button
+            onClick={testEmailJS}
+            disabled={testingEmailjs || !isEmailjsConfigured}
+            className="w-full"
+            variant="outline"
+          >
+            <Send className="h-4 w-4 mr-2" />
+            {testingEmailjs ? 'Sending Test...' : 'Send Test Email'}
+          </Button>
         </CardContent>
       </Card>
 
