@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { useSEO } from '@/hooks/useSEO';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Globe, FileText, Mail } from 'lucide-react';
+import { Settings, Globe, FileText, Mail, Send, AlertCircle, CheckCircle } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 const SiteSettingsEditor = () => {
   const { siteSettings, updateSiteSetting, loading } = useSEO();
