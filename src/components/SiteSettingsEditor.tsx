@@ -13,6 +13,7 @@ const SiteSettingsEditor = () => {
   const { siteSettings, updateSiteSetting, loading } = useSEO();
   const { toast } = useToast();
   const [saving, setSaving] = useState<string | null>(null);
+  const [testingEmailjs, setTestingEmailjs] = useState(false);
   const [emailjsConfig, setEmailjsConfig] = useState(() => {
     const stored = localStorage.getItem('emailjs_config');
     return stored ? JSON.parse(stored) : { serviceId: '', templateId: '', publicKey: '' };
@@ -48,9 +49,48 @@ const SiteSettingsEditor = () => {
     localStorage.setItem('emailjs_config', JSON.stringify(newConfig));
     toast({
       title: "Success",
-      description: `EmailJS ${field} updated successfully!`,
+      description: `EmailJS ${field} saved successfully!`,
     });
   };
+
+  const testEmailJS = async () => {
+    if (!emailjsConfig.serviceId || !emailjsConfig.templateId || !emailjsConfig.publicKey) {
+      toast({
+        title: "Missing Configuration",
+        description: "Please fill in all EmailJS fields before testing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTestingEmailjs(true);
+    try {
+      await emailjs.send(
+        emailjsConfig.serviceId,
+        emailjsConfig.templateId,
+        {
+          to_email: 'cloudyskybd48@gmail.com',
+          reset_link: 'https://example.com/test',
+          to_name: 'Admin'
+        },
+        emailjsConfig.publicKey
+      );
+      toast({
+        title: "Test Sent Successfully",
+        description: "Check cloudyskybd48@gmail.com inbox for the test email.",
+      });
+    } catch (error: any) {
+      console.error('EmailJS test failed:', error);
+      toast({
+        title: "Test Failed",
+        description: error?.text || "Could not send test email. Check your EmailJS credentials and template variables.",
+        variant: "destructive",
+      });
+    }
+    setTestingEmailjs(false);
+  };
+
+  const isEmailjsConfigured = emailjsConfig.serviceId && emailjsConfig.templateId && emailjsConfig.publicKey;
 
   if (loading) {
     return (
