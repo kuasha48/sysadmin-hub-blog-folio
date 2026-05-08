@@ -3,14 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { useSEO } from '@/hooks/useSEO';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Globe, FileText, Mail } from 'lucide-react';
+import { Settings, Globe, FileText, Mail, Send, AlertCircle, CheckCircle } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 const SiteSettingsEditor = () => {
   const { siteSettings, updateSiteSetting, loading } = useSEO();
   const { toast } = useToast();
   const [saving, setSaving] = useState<string | null>(null);
+  const [testingEmailjs, setTestingEmailjs] = useState(false);
   const [emailjsConfig, setEmailjsConfig] = useState(() => {
     const stored = localStorage.getItem('emailjs_config');
     return stored ? JSON.parse(stored) : { serviceId: '', templateId: '', publicKey: '' };
@@ -46,9 +49,48 @@ const SiteSettingsEditor = () => {
     localStorage.setItem('emailjs_config', JSON.stringify(newConfig));
     toast({
       title: "Success",
-      description: `EmailJS ${field} updated successfully!`,
+      description: `EmailJS ${field} saved successfully!`,
     });
   };
+
+  const testEmailJS = async () => {
+    if (!emailjsConfig.serviceId || !emailjsConfig.templateId || !emailjsConfig.publicKey) {
+      toast({
+        title: "Missing Configuration",
+        description: "Please fill in all EmailJS fields before testing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTestingEmailjs(true);
+    try {
+      await emailjs.send(
+        emailjsConfig.serviceId,
+        emailjsConfig.templateId,
+        {
+          to_email: 'cloudyskybd48@gmail.com',
+          reset_link: 'https://example.com/test',
+          to_name: 'Admin'
+        },
+        emailjsConfig.publicKey
+      );
+      toast({
+        title: "Test Sent Successfully",
+        description: "Check cloudyskybd48@gmail.com inbox for the test email.",
+      });
+    } catch (error: any) {
+      console.error('EmailJS test failed:', error);
+      toast({
+        title: "Test Failed",
+        description: error?.text || "Could not send test email. Check your EmailJS credentials and template variables.",
+        variant: "destructive",
+      });
+    }
+    setTestingEmailjs(false);
+  };
+
+  const isEmailjsConfigured = emailjsConfig.serviceId && emailjsConfig.templateId && emailjsConfig.publicKey;
 
   if (loading) {
     return (
@@ -72,6 +114,13 @@ const SiteSettingsEditor = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className={`flex items-center gap-2 text-sm p-3 rounded-lg ${isEmailjsConfigured ? 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300' : 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300'}`}>
+            {isEmailjsConfigured ? <CheckCircle className="h-4 w-4 flex-shrink-0" /> : <AlertCircle className="h-4 w-4 flex-shrink-0" />}
+            {isEmailjsConfigured
+              ? "EmailJS is configured. Password reset emails will be sent."
+              : "EmailJS is not fully configured. Password reset links will only be shown in the browser console."}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="emailjs_service">Service ID</Label>
             <Input
@@ -89,6 +138,9 @@ const SiteSettingsEditor = () => {
               value={emailjsConfig.templateId}
               onChange={(e) => handleEmailjsUpdate('templateId', e.target.value)}
             />
+            <p className="text-xs text-muted-foreground">
+              Template must include variables: {"{{"}to_email{"}}"}, {"{{"}reset_link{"}}"}, {"{{"}to_name{"}}"}
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="emailjs_public">Public Key</Label>
@@ -99,6 +151,15 @@ const SiteSettingsEditor = () => {
               onChange={(e) => handleEmailjsUpdate('publicKey', e.target.value)}
             />
           </div>
+          <Button
+            onClick={testEmailJS}
+            disabled={testingEmailjs || !isEmailjsConfigured}
+            className="w-full"
+            variant="outline"
+          >
+            <Send className="h-4 w-4 mr-2" />
+            {testingEmailjs ? 'Sending Test...' : 'Send Test Email'}
+          </Button>
         </CardContent>
       </Card>
 

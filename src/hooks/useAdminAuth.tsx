@@ -124,6 +124,14 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     return true;
   };
 
+  const getEmailJSConfig = () => {
+    const stored = localStorage.getItem('emailjs_config');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    return { serviceId: '', templateId: '', publicKey: '' };
+  };
+
   const sendPasswordReset = async (email: string): Promise<boolean> => {
     const credentials = await getCredentials();
     if (!credentials || credentials.email.toLowerCase() !== email.toLowerCase()) {
@@ -138,21 +146,32 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
 
     const resetLink = `${window.location.origin}/auth?reset=${resetToken}`;
 
+    const emailjsConfig = getEmailJSConfig();
+    
+    // Check if EmailJS is configured
+    if (!emailjsConfig.serviceId || !emailjsConfig.templateId || !emailjsConfig.publicKey) {
+      console.warn('EmailJS not configured. Reset link:', resetLink);
+      console.warn('Please configure EmailJS in Admin > Settings to send password reset emails.');
+      // Token is still generated - return true so user sees success message
+      return true;
+    }
+
     try {
-      // Send email using EmailJS
+      // Send email using EmailJS with configured credentials
       await emailjs.send(
-        'YOUR_SERVICE_ID',
-        'YOUR_TEMPLATE_ID',
+        emailjsConfig.serviceId,
+        emailjsConfig.templateId,
         {
           to_email: email,
           reset_link: resetLink,
           to_name: 'Admin'
         },
-        'YOUR_PUBLIC_KEY'
+        emailjsConfig.publicKey
       );
+      console.log('Password reset email sent successfully via EmailJS');
     } catch (error) {
-      console.error('EmailJS not configured. Reset link:', resetLink);
-      // Even if email fails, token is generated - log the link for admin use
+      console.error('EmailJS send failed:', error);
+      console.error('Reset link:', resetLink);
     }
     
     // Return true as long as email matched - token was generated successfully
