@@ -4,6 +4,8 @@ import { Search, Calendar, User, Tag, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import SEOHead from '@/components/SEOHead';
+import BlogThemeToggle from '@/components/BlogThemeToggle';
+import { useBlogTheme } from '@/hooks/useBlogTheme';
 
 interface BlogPost {
   id: string;
