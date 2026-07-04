@@ -163,6 +163,50 @@
   @apply underline;
 }
 
+/* Dark variant used on public blog post view */
+.blog-content-dark {
+  @apply text-gray-200;
+}
+.blog-content-dark h1,
+.blog-content-dark h2,
+.blog-content-dark h3,
+.blog-content-dark h4,
+.blog-content-dark h5,
+.blog-content-dark h6 {
+  @apply text-gray-100;
+}
+.blog-content-dark p,
+.blog-content-dark li {
+  @apply text-gray-300;
+}
+.blog-content-dark strong,
+.blog-content-dark b {
+  @apply text-gray-100;
+}
+.blog-content-dark blockquote {
+  @apply border-l-4 border-green-500 pl-4 italic text-gray-400;
+}
+.blog-content-dark code {
+  @apply bg-gray-800 text-green-300 border border-gray-700;
+}
+.blog-content-dark pre {
+  @apply bg-gray-950 text-green-300 border border-gray-800;
+}
+.blog-content-dark pre code {
+  @apply bg-transparent text-green-300 border-0 p-0;
+}
+.blog-content-dark a {
+  @apply text-green-400 hover:text-green-300;
+}
+.blog-content-dark table {
+  @apply text-gray-200;
+}
+.blog-content-dark th,
+.blog-content-dark td {
+  @apply border-gray-700;
+}
+
+
 /* React Quill editor styles */
 .ql-editor {
   min-height: 350px !important;
