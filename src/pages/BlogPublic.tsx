@@ -24,6 +24,7 @@ const BlogPublic = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isDark } = useBlogTheme();
 
   const categories = [
     { id: 'all', name: 'All Posts' },
