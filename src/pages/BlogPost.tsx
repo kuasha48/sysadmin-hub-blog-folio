@@ -23,6 +23,7 @@ const BlogPost = () => {
   const { slug } = useParams();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isDark } = useBlogTheme();
 
   const categories = [
     { id: 'infrastructure', name: 'Infrastructure' },
