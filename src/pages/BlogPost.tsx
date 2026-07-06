@@ -57,7 +57,7 @@ const BlogPost = () => {
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-[#0d1117]' : 'bg-gray-50'}`}>
         <div className={`text-lg ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Loading post...</div>
       </div>
     );
@@ -65,7 +65,7 @@ const BlogPost = () => {
 
   if (!post) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-[#0d1117]' : 'bg-gray-50'}`}>
         <div className="text-center">
           <h1 className={`text-2xl font-bold mb-4 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>Post Not Found</h1>
           <Link to="/blog" className={isDark ? 'text-green-400 hover:text-green-300' : 'text-green-600 hover:text-green-700'}>
@@ -77,7 +77,7 @@ const BlogPost = () => {
   }
 
   return (
-    <div className={isDark ? 'min-h-screen bg-gray-900' : 'min-h-screen bg-gray-50'}>
+    <div className={isDark ? 'min-h-screen bg-[#0d1117]' : 'min-h-screen bg-gray-50'}>
       <SEOHead 
         pageType="blog_post" 
         pageSlug={post.slug}

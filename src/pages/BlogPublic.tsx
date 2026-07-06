@@ -63,14 +63,14 @@ const BlogPublic = () => {
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-[#0d1117]' : 'bg-gray-50'}`}>
         <div className={`text-lg ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Loading posts...</div>
       </div>
     );
   }
 
   return (
-    <div className={isDark ? 'min-h-screen bg-gray-900' : 'min-h-screen bg-gray-50'}>
+    <div className={isDark ? 'min-h-screen bg-[#0d1117]' : 'min-h-screen bg-gray-50'}>
       <SEOHead 
         pageType="page" 
         pageSlug="blog" 
@@ -100,7 +100,7 @@ const BlogPublic = () => {
                   placeholder="Search articles..."
                   className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
                     isDark
-                      ? 'bg-gray-900 border-gray-700 text-gray-100 placeholder:text-gray-500'
+                      ? 'bg-[#0d1117] border-gray-700 text-gray-100 placeholder:text-gray-500'
                       : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
                   }`}
                   value={searchTerm}
